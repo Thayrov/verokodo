@@ -66,50 +66,39 @@ float textureNoise(vec3 p) {
   vec2 uv = fract((p.xy * 0.135) + vec2(p.z * 0.11, p.z * 0.07));
   return texture2D(uNoise, uv).r;
 }
-
-float hash(vec3 p) {
-  p = fract(p * 0.3183099 + vec3(0.1));
-  p *= 17.0;
-  float tex = textureNoise(p * 7.0);
-  return fract((p.x * p.y * p.z * (p.x + p.y + p.z)) + tex * 3.1);
-}
-
-float noise(vec3 p) {
+float pn(vec3 p) {
   vec3 i = floor(p);
-  vec3 f = fract(p);
-  f = f * f * (3.0 - 2.0 * f);
-
-  float n000 = hash(i + vec3(0.0, 0.0, 0.0));
-  float n100 = hash(i + vec3(1.0, 0.0, 0.0));
-  float n010 = hash(i + vec3(0.0, 1.0, 0.0));
-  float n110 = hash(i + vec3(1.0, 1.0, 0.0));
-  float n001 = hash(i + vec3(0.0, 0.0, 1.0));
-  float n101 = hash(i + vec3(1.0, 0.0, 1.0));
-  float n011 = hash(i + vec3(0.0, 1.0, 1.0));
-  float n111 = hash(i + vec3(1.0, 1.0, 1.0));
-
-  float n00 = mix(n000, n100, f.x);
-  float n10 = mix(n010, n110, f.x);
-  float n01 = mix(n001, n101, f.x);
-  float n11 = mix(n011, n111, f.x);
-
-  float n0 = mix(n00, n10, f.y);
-  float n1 = mix(n01, n11, f.y);
-
-  return mix(n0, n1, f.z);
+  p -= i;
+  p *= p * (3.0 - 2.0 * p);
+  p.xy = texture2D(uNoise, (p.xy + i.xy + vec2(37.0, 17.0) * i.z + 0.5) / 256.0, -100.0).yx;
+  return mix(p.x, p.y, p.z);
 }
-
-float fbm(vec3 p) {
-  float value = 0.0;
-  float amplitude = 0.5;
-
-  for (int i = 0; i < 5; i++) {
-    value += amplitude * noise(p);
-    p *= 2.1;
-    amplitude *= 0.5;
+float tri(float x) {
+  return abs(fract(x) - 0.5);
+}
+vec3 tri3(vec3 p) {
+  return vec3(tri(p.z + tri(p.y)), tri(p.z + tri(p.x)), tri(p.y + tri(p.x)));
+}
+float triNoise3D(vec3 p, float speed, float time) {
+  float z = 1.4;
+  float rz = 0.0;
+  vec3 bp = p;
+  for (float i = 0.0; i <= 3.0; i++) {
+    vec3 dg = tri3(bp * 2.0);
+    p += dg + vec3(time * 0.1 * speed);
+    bp *= 1.8;
+    z *= 1.5;
+    p *= 1.2;
+    float t = tri(p.z + tri(p.x + tri(p.y)));
+    rz += t / z;
+    bp += 0.14;
   }
-
-  return value;
+  return rz;
+}
+mat2 rot2(float angle) {
+  float s = sin(angle);
+  float c = cos(angle);
+  return mat2(c, -s, s, c);
 }
 
 float sphereIntersect(vec3 ro, vec3 rd, float radius) {
@@ -128,9 +117,12 @@ void main() {
   vec3 bgTop = vec3(0.02, 0.04, 0.09);
   vec3 bgBottom = vec3(0.00, 0.00, 0.02);
   vec3 color = mix(bgBottom, bgTop, smoothstep(-0.9, 1.0, uv.y));
-
-  vec3 ro = vec3(0.0, 0.0, 2.45 - (uZoom * 1.35));
-  vec3 rd = normalize(vec3(uv, -1.7));
+  vec3 ro = vec3(sin(t * 0.55) * 0.075, cos(t * 0.43) * 0.05, 2.45 - (uZoom * 1.35));
+  vec3 lookAt = vec3(0.0);
+  vec3 forward = normalize(lookAt - ro);
+  vec3 right = normalize(vec3(forward.z, 0.0, -forward.x));
+  vec3 up = normalize(cross(forward, right));
+  vec3 rd = normalize(forward + uv.x * right + uv.y * up * 0.96);
 
   float hit = sphereIntersect(ro, rd, 1.0);
   if (hit > 0.0) {
@@ -147,18 +139,18 @@ void main() {
     for (int i = 0; i < 32; i++) {
       float f = float(i) / 31.0;
       vec3 samplePos = ro + rd * (hit + f * marchDistance);
+      samplePos.xz *= rot2(t * 0.22);
+      samplePos.xy *= rot2(sin(t * 0.3) * 0.24);
       float radius = length(samplePos);
       float shell = 1.0 - smoothstep(0.14, 1.0, radius);
       float centerFade = smoothstep(0.0, 0.52, radius);
       float edgeFade = 1.0 - smoothstep(0.58, 1.02, radius);
 
-      vec3 swirlPos = samplePos * 3.1 + vec3(0.0, t * 1.35, t * 0.9);
-      float largeShape = fbm(swirlPos + vec3(sin(t + samplePos.y * 0.8), cos(t + samplePos.x * 0.7), t * 0.12));
-      float wisps = fbm(swirlPos * 1.9 + vec3(t * 0.42, -t * 0.26, t * 0.34));
-      float grain = textureNoise(swirlPos * 2.4 + vec3(0.0, t * 0.9, t * 0.45));
+      float largeShape = triNoise3D(samplePos * 0.46, 1.0, t * 2.6);
+      float wisps = triNoise3D(samplePos * 1.28 + vec3(0.0, t * 0.72, 0.0), 0.84, t * 3.2);
+      float grain = pn(samplePos * 8.0 + vec3(t * 0.55));
 
-      float cloud = mix(largeShape, wisps, 0.58);
-      cloud = mix(cloud, grain, 0.22);
+      float cloud = largeShape * 0.62 + wisps * 0.28 + grain * 0.1;
 
       float sampleDensity = smoothstep(0.34, 0.9, cloud) * shell * centerFade * edgeFade;
       float absorption = sampleDensity * 1.45 * stepLength;
@@ -180,6 +172,10 @@ void main() {
 
     color = mix(color, volumeColor, clamp(volumeAlpha * 1.25 + glow, 0.0, 1.0));
     color = mix(color, vec3(0.9, 0.93, 0.99), volumeAlpha * 0.35);
+    float sceneLen = length(ro - pos);
+    float sceneAtten = min(1.0 / (0.018 * sceneLen * sceneLen), 1.0);
+    float whiteFog = clamp(1.0 - sceneAtten * sceneAtten, 0.0, 1.0);
+    color = mix(color, vec3(0.95, 0.96, 0.99), whiteFog * 0.84);
     color += envColor * (0.1 + fresnel * 0.2);
     color += smokeTint * fresnel * 0.62;
 
