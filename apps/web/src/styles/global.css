@@ -9,6 +9,10 @@
 	--text: #eef4ff;
 	--muted: #9ba9c6;
 	--accent: #72d4ff;
+	--ok: #83e4a5;
+	--danger: #ff9494;
+	--motion-fast: 180ms;
+	--motion-standard: 320ms;
 }
 
 * {
@@ -147,6 +151,61 @@ body {
 	line-height: 1.35;
 }
 
+.form-meta {
+	display: grid;
+	gap: 0.35rem;
+	text-align: left;
+}
+
+.form-actions-inline {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+
+.status-text[data-valid='valid'] {
+	color: var(--ok);
+}
+
+.status-text[data-valid='invalid'] {
+	color: var(--danger);
+}
+
+#username-shortcut {
+	margin: 0;
+	font-size: 0.82rem;
+}
+
+#username-shortcut kbd {
+	font-family: "IBM Plex Mono", monospace;
+	font-size: 0.72rem;
+	padding: 0.1rem 0.33rem;
+	border-radius: 0.35rem;
+	border: 1px solid rgb(161 205 255 / 34%);
+	background: rgb(7 15 34 / 82%);
+	color: var(--text);
+}
+
+.ghost-inline {
+	appearance: none;
+	border: 1px solid rgb(146 196 255 / 35%);
+	border-radius: 999px;
+	background: rgb(7 15 34 / 72%);
+	color: var(--muted);
+	padding: 0.3rem 0.58rem;
+	font-size: 0.76rem;
+	font-family: "IBM Plex Mono", monospace;
+	cursor: pointer;
+	transition: border-color var(--motion-fast) ease, color var(--motion-fast) ease;
+}
+
+.ghost-inline:hover {
+	color: var(--text);
+	border-color: rgb(173 218 255 / 66%);
+}
+
 .sr-only {
 	position: absolute;
 	width: 1px;
@@ -160,6 +219,8 @@ body {
 }
 
 .orb-form,
+#loading-panel,
+.form-meta,
 #home-note,
 #error-panel,
 #result-panel {
@@ -167,7 +228,7 @@ body {
 	max-height: 0;
 	overflow: hidden;
 	transform: translateY(8px);
-	transition: opacity 320ms ease, transform 460ms ease;
+	transition: opacity var(--motion-standard) ease, transform 460ms ease;
 	pointer-events: none;
 }
 
@@ -213,6 +274,21 @@ body {
 	color: #f7fbff;
 	font-weight: 700;
 	cursor: pointer;
+	transition:
+		filter var(--motion-fast) ease,
+		transform var(--motion-fast) ease,
+		opacity var(--motion-fast) ease;
+}
+
+.start-reading:hover {
+	filter: brightness(1.15);
+	transform: translateY(-1px);
+}
+
+.start-reading:disabled {
+	opacity: 0.46;
+	cursor: not-allowed;
+	filter: saturate(0.35);
 }
 
 .oracle-panel {
@@ -307,9 +383,17 @@ body {
 }
 
 #oracle-experience[data-state="idle"] .orb-form,
+#oracle-experience[data-state="idle"] .form-meta,
 #oracle-experience[data-state="idle"] #home-note {
 	opacity: 1;
 	max-height: 12rem;
+	transform: translateY(0);
+	pointer-events: auto;
+}
+
+#oracle-experience[data-state="loading"] #loading-panel {
+	opacity: 1;
+	max-height: min(40dvh, 17rem);
 	transform: translateY(0);
 	pointer-events: auto;
 }
@@ -463,8 +547,43 @@ h1 {
 	padding: clamp(1rem, 2vw, 2rem);
 }
 
-.loading-panel,
-.result-panel {
+#oracle-experience .loading-panel {
+	width: min(26rem, 100%);
+	margin-inline: auto;
+	padding: 0.95rem;
+	text-align: left;
+	background: rgb(4 10 28 / 72%);
+	border: 1px solid rgb(145 191 255 / 24%);
+}
+
+.loading-progress {
+	margin-top: 0.65rem;
+	height: 0.45rem;
+	border-radius: 999px;
+	background: rgb(121 165 245 / 16%);
+	overflow: hidden;
+}
+
+#loading-progress-bar {
+	display: block;
+	width: 100%;
+	height: 100%;
+	transform-origin: left center;
+	transform: scaleX(var(--loading-progress, 0));
+	background: linear-gradient(90deg, rgb(111 170 255 / 94%), rgb(105 226 255 / 92%));
+	transition: transform 240ms ease;
+}
+
+.loading-meta {
+	margin: 0.55rem 0 0;
+	font-family: "IBM Plex Mono", monospace;
+	font-size: 0.75rem;
+	letter-spacing: 0.03em;
+	color: rgb(188 216 255 / 78%);
+}
+
+.loading-shell .loading-panel,
+.result-shell .result-panel {
 	width: min(56rem, 100%);
 	border: 1px solid var(--panel-border);
 	border-radius: 1.2rem;
@@ -475,7 +594,7 @@ h1 {
 		inset 0 0 0 1px rgb(130 181 255 / 6%);
 }
 
-.loading-panel {
+.loading-shell .loading-panel {
 	text-align: center;
 }
 
@@ -511,6 +630,12 @@ h1 {
 	border: 0;
 	border-radius: 0.75rem;
 	background: rgb(7 13 29 / 60%);
+	transition: transform 260ms ease, background-color 260ms ease;
+}
+
+.signal-card:hover {
+	transform: translateY(-2px);
+	background: rgb(10 18 40 / 72%);
 }
 
 .signal-label {
@@ -586,6 +711,45 @@ h1 {
 	border-color: rgb(156 210 255 / 70%);
 }
 
+.action-row button:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+	border-color: rgb(151 185 255 / 26%);
+}
+
+.result-actions {
+	margin-top: 1.3rem;
+}
+
+.result-meta {
+	font-size: 0.84rem;
+	color: rgb(180 212 255 / 78%);
+}
+
+#oracle-experience[data-state="result"] .result-scroll > * {
+	animation: reveal-up 360ms cubic-bezier(0.2, 0.7, 0.18, 1) both;
+}
+
+#oracle-experience[data-state="result"] .result-scroll > :nth-child(2) {
+	animation-delay: 24ms;
+}
+
+#oracle-experience[data-state="result"] .result-scroll > :nth-child(3) {
+	animation-delay: 48ms;
+}
+
+#oracle-experience[data-state="result"] .result-scroll > :nth-child(4) {
+	animation-delay: 72ms;
+}
+
+#oracle-experience[data-state="result"] .result-scroll > :nth-child(5) {
+	animation-delay: 96ms;
+}
+
+#oracle-experience[data-state="result"] .result-scroll > :nth-child(6) {
+	animation-delay: 120ms;
+}
+
 @keyframes spin {
 	to {
 		transform: rotate(360deg);
@@ -599,5 +763,48 @@ h1 {
 
 	to {
 		background-position: 0 -100%;
+	}
+}
+
+@keyframes reveal-up {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@media (max-width: 680px) {
+	.experience-frame {
+		inset: 0.45rem;
+		padding: 0.8rem;
+	}
+
+	.result-scroll {
+		padding: 3.4rem 0.95rem 1.15rem;
+	}
+
+	.result-panel .signal-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.experience-frame::before,
+	.sigil,
+	#oracle-experience[data-state="result"] .result-scroll > * {
+		animation: none;
+	}
+
+	* {
+		transition-duration: 1ms !important;
+	}
+
+	.crystal-canvas {
+		transform: none !important;
 	}
 }

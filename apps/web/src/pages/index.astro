@@ -15,6 +15,7 @@ import Layout from '../layouts/Layout.astro';
 			<section class="orb-stage">
 				<div class="orb-shell">
 					<div class="orb-content">
+						<p id="screen-announce" class="sr-only" aria-live="polite"></p>
 						<form id="oracle-form" class="orb-form" aria-label="Start oracle reading">
 							<label id="username-label" for="username" class="sr-only">GitHub Username</label>
 							<div class="orb-input-shell">
@@ -23,19 +24,37 @@ import Layout from '../layouts/Layout.astro';
 									name="username"
 									placeholder="thayrov"
 									autocomplete="username"
+									list="recent-usernames"
+									aria-describedby="username-hint username-shortcut"
 									required
 									maxlength="39"
 									pattern="[A-Za-z0-9](?:[A-Za-z0-9]|-){0,37}"
 								/>
 								<button id="start-button" class="start-reading" type="submit">Go</button>
 							</div>
+							<datalist id="recent-usernames"></datalist>
 						</form>
+
+						<div class="form-meta">
+							<p id="username-hint" class="status-text">Only public GitHub usernames are supported.</p>
+							<div class="form-actions-inline">
+								<p id="username-shortcut" class="status-text">Press <kbd>/</kbd> to focus</p>
+								<button id="clear-recent" class="ghost-inline" type="button" hidden>Clear recent</button>
+							</div>
+						</div>
 
 						<p id="home-note" class="orb-note">Use your GitHub username to get a glimpse of your dev future.</p>
 
-						<section id="loading-panel" class="sr-only" aria-live="polite">
-							<p id="loading-label">Reading in progress</p>
-							<p id="loading-status">Collecting profile signals...</p>
+						<section id="loading-panel" class="oracle-panel loading-panel" aria-live="polite" aria-busy="true">
+							<p id="loading-label" class="status-eyebrow">Reading in progress</p>
+							<p id="loading-status" class="status-text">Collecting profile signals...</p>
+							<div class="loading-progress" aria-hidden="true">
+								<span id="loading-progress-bar"></span>
+							</div>
+							<p id="loading-meta" class="loading-meta">Step 1 of 3 - 0.0s</p>
+							<div class="action-row compact-actions">
+								<button id="cancel-reading" type="button">Cancel</button>
+							</div>
 						</section>
 
 						<section id="error-panel" class="oracle-panel error-panel" aria-live="polite">
@@ -66,6 +85,13 @@ import Layout from '../layouts/Layout.astro';
 								</article>
 
 								<div id="signal-grid" class="signal-grid"></div>
+
+								<div class="action-row result-actions">
+									<button id="copy-share" type="button">Copy Share Line</button>
+									<button id="copy-link" type="button">Copy Result Link</button>
+									<button id="share-reading" type="button">Share Reading</button>
+								</div>
+								<p id="result-meta" class="status-text result-meta"></p>
 							</div>
 						</section>
 					</div>

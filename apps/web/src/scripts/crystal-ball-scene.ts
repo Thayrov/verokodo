@@ -48,11 +48,15 @@ function clampZoom(value: number): number {
   return Math.min(1.25, Math.max(0, value))
 }
 
-function clampActivity(value: number): number {
-  return Math.min(1.5, Math.max(0, value))
+function clampActivity(value: number, reducedMotion: boolean): number {
+  const upperBound = reducedMotion ? 0.62 : 1.5
+  return Math.min(upperBound, Math.max(0, value))
 }
 
 export function createCrystalBallScene(container: HTMLElement): CrystalBallScene {
+  const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+  let reducedMotion = reducedMotionQuery.matches
+
   const scene = new THREE.Scene()
   const camera = new THREE.Camera()
   camera.position.z = 1
@@ -72,7 +76,7 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
     uTime: { value: 0 },
     uResolution: { value: new THREE.Vector2(1, 1) },
     uZoom: { value: 0 },
-    uActivity: { value: 0.45 },
+    uActivity: { value: clampActivity(0.45, reducedMotion) },
     uNoise: { value: noiseTexture },
     uEnv: { value: environmentTexture }
   }
@@ -86,8 +90,12 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
   const mesh = new THREE.Mesh(geometry, material)
   scene.add(mesh)
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
+  const renderer = new THREE.WebGLRenderer({
+    antialias: !reducedMotion,
+    alpha: true,
+    powerPreference: reducedMotion ? 'low-power' : 'high-performance'
+  })
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, reducedMotion ? 1 : 1.5))
   renderer.setClearColor(0x000000, 0)
   renderer.domElement.style.display = 'block'
   container.append(renderer.domElement)
@@ -118,9 +126,11 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
 
   let targetZoom = 0
   let currentZoom = 0
-  let targetActivity = 0.45
-  let currentActivity = 0.45
+  let targetActivity = clampActivity(0.45, reducedMotion)
+  let currentActivity = clampActivity(0.45, reducedMotion)
   let rafId = 0
+  let destroyed = false
+  let inViewport = true
   const clock = new THREE.Clock()
 
   const resize = (): void => {
@@ -131,6 +141,10 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
   }
 
   const render = (): void => {
+    if (destroyed) {
+      return
+    }
+
     const elapsed = clock.getElapsedTime()
     currentZoom += (targetZoom - currentZoom) * 0.05
     currentActivity += (targetActivity - currentActivity) * 0.05
@@ -141,9 +155,70 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
     rafId = requestAnimationFrame(render)
   }
 
+  const stopRenderLoop = (): void => {
+    if (rafId === 0) {
+      return
+    }
+
+    cancelAnimationFrame(rafId)
+    rafId = 0
+    clock.stop()
+  }
+
+  const startRenderLoop = (): void => {
+    if (rafId !== 0 || destroyed) {
+      return
+    }
+
+    clock.start()
+    render()
+  }
+
+  const updateRenderLoopState = (): void => {
+    if (document.hidden || !inViewport) {
+      stopRenderLoop()
+      return
+    }
+
+    startRenderLoop()
+  }
+
+  const viewportObserver = new IntersectionObserver(
+    (entries) => {
+      const nextVisibility = entries.some((entry) => entry.isIntersecting)
+      if (nextVisibility === inViewport) {
+        return
+      }
+
+      inViewport = nextVisibility
+      updateRenderLoopState()
+    },
+    { threshold: 0.01 }
+  )
+
+  const handleVisibilityChange = (): void => {
+    updateRenderLoopState()
+  }
+
+  const handleMotionPreferenceChange = (): void => {
+    reducedMotion = reducedMotionQuery.matches
+    targetActivity = clampActivity(targetActivity, reducedMotion)
+    currentActivity = clampActivity(currentActivity, reducedMotion)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, reducedMotion ? 1 : 1.5))
+    resize()
+  }
+
+  if ('addEventListener' in reducedMotionQuery) {
+    reducedMotionQuery.addEventListener('change', handleMotionPreferenceChange)
+  } else {
+    reducedMotionQuery.addListener(handleMotionPreferenceChange)
+  }
+
   resize()
   window.addEventListener('resize', resize)
-  render()
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+  viewportObserver.observe(container)
+  startRenderLoop()
 
   return {
     setZoomTarget(value: number, immediate = false) {
@@ -153,14 +228,24 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
       }
     },
     setActivityTarget(value: number, immediate = false) {
-      targetActivity = clampActivity(value)
+      targetActivity = clampActivity(value, reducedMotion)
       if (immediate) {
         currentActivity = targetActivity
       }
     },
     destroy() {
-      cancelAnimationFrame(rafId)
+      destroyed = true
+      stopRenderLoop()
       window.removeEventListener('resize', resize)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      viewportObserver.disconnect()
+
+      if ('removeEventListener' in reducedMotionQuery) {
+        reducedMotionQuery.removeEventListener('change', handleMotionPreferenceChange)
+      } else {
+        reducedMotionQuery.removeListener(handleMotionPreferenceChange)
+      }
+
       geometry.dispose()
       material.dispose()
       for (const texture of managedTextures) {
