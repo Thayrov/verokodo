@@ -1,0 +1,201 @@
+---
+/**
+ * Purpose: Bridge the input form and API call with an immersive loading state.
+ * Interface: Reads query params, calls /oracle, redirects to result page.
+ * Invariants: only validated payloads are sent to API.
+ * Decisions: keep loading page client-driven to preserve transition feel.
+ */
+
+import Layout from '../layouts/Layout.astro';
+
+const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+---
+
+<Layout title="Verokodo | Reading In Progress">
+	<main class="loading-shell">
+		<section class="loading-panel" aria-live="polite">
+			<p id="loading-badge" class="badge">Preparing reading</p>
+			<h1 id="loading-title">Analyzing your public profile</h1>
+			<div class="sigil" aria-hidden="true"></div>
+			<p id="loading-status" class="loading-status">Collecting profile signals...</p>
+			<p id="loading-error" class="error-banner" hidden></p>
+			<div id="loading-actions" class="action-row loading-actions" hidden>
+				<button id="copy-error" type="button">Copy Error</button>
+				<a id="return-input" href="/">Return to input</a>
+			</div>
+		</section>
+	</main>
+</Layout>
+
+<script define:vars={{ apiBaseUrl }} type="module">
+	const copyByLocale = {
+		en: {
+			badge: 'Preparing reading',
+			title: 'Analyzing your public profile',
+			statusCollecting: 'Collecting profile signals...',
+			statusConsulting: 'Generating reading...',
+			statusFailed: 'Reading failed.',
+			copyError: 'Copy Error',
+			copied: 'Copied',
+			returnInput: 'Return to input',
+			unsupportedProvider: 'Only GitHub is supported for now.',
+			invalidUsername: 'Invalid GitHub username.',
+			invalidPayload: 'Invalid reading payload.',
+			missingFields: 'Missing reading fields.',
+			unexpectedClientError: 'Unexpected client error.',
+			requestFailed: (status) => `Request failed (HTTP ${status}).`
+		},
+		es: {
+			badge: 'Preparando lectura',
+			title: 'Analizando tu perfil publico',
+			statusCollecting: 'Recolectando senales del perfil...',
+			statusConsulting: 'Generando lectura...',
+			statusFailed: 'La lectura fallo.',
+			copyError: 'Copiar error',
+			copied: 'Copiado',
+			returnInput: 'Volver al inicio',
+			unsupportedProvider: 'Por ahora solo soportamos GitHub.',
+			invalidUsername: 'Usuario de GitHub invalido.',
+			invalidPayload: 'Payload de lectura invalido.',
+			missingFields: 'Faltan campos de la lectura.',
+			unexpectedClientError: 'Error inesperado en cliente.',
+			requestFailed: (status) => `El request fallo (HTTP ${status}).`
+		}
+	};
+
+	function detectLocale() {
+		const queryLocale = new URLSearchParams(window.location.search).get('locale');
+		if (queryLocale === 'es' || queryLocale === 'en') {
+			return queryLocale;
+		}
+
+		const browserLocales = [
+			...(navigator.languages ?? []),
+			navigator.language,
+			Intl.DateTimeFormat().resolvedOptions().locale
+		].filter(Boolean);
+
+		return browserLocales.some((locale) => locale.toLowerCase().startsWith('es')) ? 'es' : 'en';
+	}
+
+	const locale = detectLocale();
+	const copy = copyByLocale[locale];
+	document.documentElement.lang = locale;
+
+	const statusNode = document.getElementById('loading-status');
+	const errorNode = document.getElementById('loading-error');
+	const actionsNode = document.getElementById('loading-actions');
+	const copyErrorNode = document.getElementById('copy-error');
+	const badgeNode = document.getElementById('loading-badge');
+	const titleNode = document.getElementById('loading-title');
+	const returnNode = document.getElementById('return-input');
+	const githubUsernamePattern = /^[A-Za-z\d](?:[A-Za-z\d-]{0,37})$/;
+	let latestError = '';
+
+	if (badgeNode) badgeNode.textContent = copy.badge;
+	if (titleNode) titleNode.textContent = copy.title;
+	if (statusNode) statusNode.textContent = copy.statusCollecting;
+	if (copyErrorNode) copyErrorNode.textContent = copy.copyError;
+	if (returnNode) returnNode.textContent = copy.returnInput;
+
+	function parseRequest(provider, username) {
+		if (provider !== 'github') {
+			throw new Error(copy.unsupportedProvider);
+		}
+
+		const trimmedUsername = username.trim();
+		if (!githubUsernamePattern.test(trimmedUsername)) {
+			throw new Error(copy.invalidUsername);
+		}
+
+		return { provider, username: trimmedUsername, locale };
+	}
+
+	function parseReadingPayload(payload) {
+		if (!payload || typeof payload !== 'object') {
+			throw new Error(copy.invalidPayload);
+		}
+
+		const candidate = payload;
+		if (typeof candidate.username !== 'string' || typeof candidate.summary !== 'string') {
+			throw new Error(copy.missingFields);
+		}
+
+		return candidate;
+	}
+
+	function encodeReading(reading) {
+		return encodeURIComponent(JSON.stringify(reading));
+	}
+
+	function setStatus(message) {
+		if (!statusNode) return;
+		statusNode.textContent = message;
+	}
+
+	function showError(message) {
+		latestError = message;
+		setStatus(copy.statusFailed);
+		if (errorNode) {
+			errorNode.textContent = message;
+			errorNode.hidden = false;
+		}
+		if (actionsNode) {
+			actionsNode.hidden = false;
+		}
+	}
+
+	async function readErrorMessage(response) {
+		const fallback = copy.requestFailed(response.status);
+		try {
+			const body = await response.json();
+			if (body && typeof body.error === 'string') {
+				return `${body.error} (HTTP ${response.status})`;
+			}
+			return fallback;
+		} catch {
+			return fallback;
+		}
+	}
+
+	async function runReading() {
+		const params = new URLSearchParams(window.location.search);
+		const username = params.get('username') ?? '';
+		const provider = (params.get('provider') ?? 'github').toLowerCase();
+
+		const request = parseRequest(provider, username);
+
+		setStatus(copy.statusConsulting);
+
+		const response = await fetch(`${apiBaseUrl}/oracle`, {
+			method: 'POST',
+			headers: {
+				'content-type': 'application/json'
+			},
+			body: JSON.stringify(request)
+		});
+
+		if (!response.ok) {
+			throw new Error(await readErrorMessage(response));
+		}
+
+		const reading = parseReadingPayload(await response.json());
+		const encoded = encodeReading(reading);
+
+		window.location.replace(`/result?reading=${encoded}`);
+	}
+
+	copyErrorNode?.addEventListener('click', async () => {
+		if (!latestError) return;
+		await navigator.clipboard.writeText(latestError);
+		copyErrorNode.textContent = copy.copied;
+		setTimeout(() => {
+			copyErrorNode.textContent = copy.copyError;
+		}, 1200);
+	});
+
+	runReading().catch((error) => {
+		const message = error instanceof Error ? error.message : copy.unexpectedClientError;
+		showError(message);
+	});
+</script>

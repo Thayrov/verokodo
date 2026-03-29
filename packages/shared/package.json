@@ -1,0 +1,12 @@
+{
+  "name": "@verokodo/shared",
+  "version": "0.0.1",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./oracle": "./src/oracle.ts"
+  },
+  "dependencies": {
+    "zod": "^3.25.67"
+  }
+}

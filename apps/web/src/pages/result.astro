@@ -1,0 +1,226 @@
+---
+/**
+ * Purpose: Render the final oracle reading and provide sharing actions.
+ * Interface: Consumes encoded reading query payload from loading route.
+ * Invariants: view renders only schema-valid readings.
+ * Decisions: decode client-side to keep stateless Tier 1 flow.
+ */
+
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Verokodo | Oracle Result">
+	<main class="result-shell">
+		<section id="result-ready" class="result-panel" hidden>
+			<p id="result-ready-badge" class="badge">Reading complete</p>
+			<h1 id="result-title">Profile reading</h1>
+			<p id="result-summary" class="lead"></p>
+
+			<div class="signal-grid" id="signal-grid"></div>
+
+			<article id="result-prophecy" class="prophecy-card"></article>
+
+			<div class="action-row">
+				<button id="copy-share" type="button">Copy Share Line</button>
+				<button id="copy-link" type="button">Copy Result Link</button>
+				<a id="new-reading" href="/">New Reading</a>
+			</div>
+		</section>
+
+		<section id="result-empty" class="glass-panel" hidden>
+			<p id="result-empty-badge" class="badge">No reading</p>
+			<h1 id="result-empty-title">No reading found</h1>
+			<p id="result-empty-lead" class="lead">Start from the first page to generate a fresh reading.</p>
+			<div class="action-row">
+				<a id="result-empty-link" href="/">Return to input</a>
+			</div>
+		</section>
+	</main>
+</Layout>
+
+<script type="module">
+	const copyByLocale = {
+		en: {
+			readyBadge: 'Reading complete',
+			titlePrefix: 'Reading for',
+			emptyBadge: 'No reading',
+			emptyTitle: 'No reading found',
+			emptyLead: 'Start from the first page to generate a fresh reading.',
+			emptyLink: 'Return to input',
+			newReading: 'New Reading',
+			copyShare: 'Copy Share Line',
+			copyLink: 'Copy Result Link',
+			copied: 'Copied',
+			followers: 'Followers',
+			publicRepos: 'Public repos',
+			topLanguages: 'Top languages',
+			recentRepos: 'Recent repos',
+			unknown: 'Unknown'
+		},
+		es: {
+			readyBadge: 'Lectura lista',
+			titlePrefix: 'Lectura de',
+			emptyBadge: 'Sin lectura',
+			emptyTitle: 'No se encontro lectura',
+			emptyLead: 'Empieza desde la primera pantalla para generar una lectura nueva.',
+			emptyLink: 'Volver al inicio',
+			newReading: 'Nueva lectura',
+			copyShare: 'Copiar texto para compartir',
+			copyLink: 'Copiar link de resultado',
+			copied: 'Copiado',
+			followers: 'Seguidores',
+			publicRepos: 'Repos publicos',
+			topLanguages: 'Lenguajes principales',
+			recentRepos: 'Repos recientes',
+			unknown: 'Desconocido'
+		}
+	};
+
+	function detectLocale() {
+		const browserLocales = [
+			...(navigator.languages ?? []),
+			navigator.language,
+			Intl.DateTimeFormat().resolvedOptions().locale
+		].filter(Boolean);
+
+		return browserLocales.some((locale) => locale.toLowerCase().startsWith('es')) ? 'es' : 'en';
+	}
+
+	const readyNode = document.getElementById('result-ready');
+	const emptyNode = document.getElementById('result-empty');
+	const readyBadgeNode = document.getElementById('result-ready-badge');
+	const emptyBadgeNode = document.getElementById('result-empty-badge');
+	const emptyTitleNode = document.getElementById('result-empty-title');
+	const emptyLeadNode = document.getElementById('result-empty-lead');
+	const emptyLinkNode = document.getElementById('result-empty-link');
+	const newReadingNode = document.getElementById('new-reading');
+	const titleNode = document.getElementById('result-title');
+	const summaryNode = document.getElementById('result-summary');
+	const prophecyNode = document.getElementById('result-prophecy');
+	const signalsNode = document.getElementById('signal-grid');
+	const copyShareNode = document.getElementById('copy-share');
+	const copyLinkNode = document.getElementById('copy-link');
+
+	let locale = detectLocale();
+	let copy = copyByLocale[locale];
+	document.documentElement.lang = locale;
+
+	if (readyBadgeNode) readyBadgeNode.textContent = copy.readyBadge;
+	if (emptyBadgeNode) emptyBadgeNode.textContent = copy.emptyBadge;
+	if (emptyTitleNode) emptyTitleNode.textContent = copy.emptyTitle;
+	if (emptyLeadNode) emptyLeadNode.textContent = copy.emptyLead;
+	if (emptyLinkNode) emptyLinkNode.textContent = copy.emptyLink;
+	if (newReadingNode) newReadingNode.textContent = copy.newReading;
+	if (copyShareNode) copyShareNode.textContent = copy.copyShare;
+	if (copyLinkNode) copyLinkNode.textContent = copy.copyLink;
+
+	function decodeReading(serialized) {
+		const parsed = JSON.parse(decodeURIComponent(serialized));
+		if (!parsed || typeof parsed !== 'object') {
+			throw new Error('Invalid reading.');
+		}
+
+		const candidate = parsed;
+		if (candidate.locale !== 'en' && candidate.locale !== 'es') {
+			throw new Error('Malformed locale.');
+		}
+
+		if (
+			typeof candidate.username !== 'string' ||
+			typeof candidate.summary !== 'string' ||
+			typeof candidate.prophecy !== 'string' ||
+			typeof candidate.shareText !== 'string' ||
+			!candidate.signals ||
+			typeof candidate.signals !== 'object'
+		) {
+			throw new Error('Malformed reading.');
+		}
+
+		const signals = candidate.signals;
+		if (
+			typeof signals.followers !== 'number' ||
+			typeof signals.publicRepos !== 'number' ||
+			!Array.isArray(signals.topLanguages) ||
+			!Array.isArray(signals.recentRepoNames)
+		) {
+			throw new Error('Malformed signals.');
+		}
+
+		return candidate;
+	}
+
+	function showEmpty() {
+		if (readyNode) readyNode.hidden = true;
+		if (emptyNode) emptyNode.hidden = false;
+	}
+
+	function mountSignal(label, value) {
+		if (!signalsNode) return;
+		const card = document.createElement('article');
+		card.className = 'signal-card';
+		card.innerHTML = `<p class="signal-label">${label}</p><p class="signal-value">${value}</p>`;
+		signalsNode.append(card);
+	}
+
+	try {
+		const params = new URLSearchParams(window.location.search);
+		const serialized = params.get('reading');
+
+		if (!serialized) {
+			showEmpty();
+		} else {
+			const reading = decodeReading(serialized);
+			locale = reading.locale;
+			copy = copyByLocale[locale];
+			document.documentElement.lang = locale;
+
+			if (readyBadgeNode) readyBadgeNode.textContent = copy.readyBadge;
+			if (emptyBadgeNode) emptyBadgeNode.textContent = copy.emptyBadge;
+			if (emptyTitleNode) emptyTitleNode.textContent = copy.emptyTitle;
+			if (emptyLeadNode) emptyLeadNode.textContent = copy.emptyLead;
+			if (emptyLinkNode) emptyLinkNode.textContent = copy.emptyLink;
+			if (newReadingNode) newReadingNode.textContent = copy.newReading;
+			if (copyShareNode) copyShareNode.textContent = copy.copyShare;
+			if (copyLinkNode) copyLinkNode.textContent = copy.copyLink;
+
+			if (emptyNode) emptyNode.hidden = true;
+			if (readyNode) readyNode.hidden = false;
+
+			if (titleNode) titleNode.textContent = `${copy.titlePrefix} @${reading.username}`;
+			if (summaryNode) summaryNode.textContent = reading.summary;
+
+			if (prophecyNode) {
+				const paragraphs = reading.prophecy
+					.split(/\n+/)
+					.map((line) => line.trim())
+					.filter(Boolean)
+					.map((line) => `<p>${line}</p>`)
+					.join('');
+				prophecyNode.innerHTML = paragraphs;
+			}
+
+			mountSignal(copy.followers, String(reading.signals.followers));
+			mountSignal(copy.publicRepos, String(reading.signals.publicRepos));
+			mountSignal(copy.topLanguages, reading.signals.topLanguages.join(', ') || copy.unknown);
+			mountSignal(copy.recentRepos, reading.signals.recentRepoNames.join(', ') || copy.unknown);
+
+			copyShareNode?.addEventListener('click', async () => {
+				await navigator.clipboard.writeText(reading.shareText);
+				copyShareNode.textContent = copy.copied;
+				setTimeout(() => {
+					copyShareNode.textContent = copy.copyShare;
+				}, 1400);
+			});
+
+			copyLinkNode?.addEventListener('click', async () => {
+				await navigator.clipboard.writeText(window.location.href);
+				copyLinkNode.textContent = copy.copied;
+				setTimeout(() => {
+					copyLinkNode.textContent = copy.copyLink;
+				}, 1400);
+			});
+		}
+	} catch {
+		showEmpty();
+	}
+</script>

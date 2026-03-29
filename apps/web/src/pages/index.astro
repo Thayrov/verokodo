@@ -1,32 +1,101 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+const lastUsername = Astro.url.searchParams.get('username') ?? '';
+const hasError = Astro.url.searchParams.get('error') === '1';
 ---
 
 <Layout title="Verokodo | First Reading">
 	<main class="home-shell">
 		<section class="glass-panel">
-			<p class="badge">Hackaton CubePath 2026</p>
-			<h1>Verokodo</h1>
-			<p class="lead">
-				Read a public developer profile. Return a dramatic prophecy rooted in real signals.
-			</p>
+			<p id="badge" class="badge">Public profile reading</p>
+			<h1 id="home-title">Verokodo</h1>
+			<p id="home-lead" class="lead">Read a public developer profile and get a clear practical reading.</p>
 
-			<form class="oracle-form" aria-label="Start oracle reading">
-				<label for="provider">Provider</label>
-				<select id="provider" name="provider" disabled>
-					<option>GitHub</option>
-					<option>GitLab</option>
-				</select>
+			<form class="oracle-form" aria-label="Start oracle reading" action="/loading" method="get">
+				<input type="hidden" name="provider" value="github" />
+				<input id="locale-input" type="hidden" name="locale" value="en" />
 
-				<label for="username">Username</label>
-				<input id="username" name="username" placeholder="thayrov" disabled />
+				<label id="username-label" for="username">GitHub Username</label>
+				<input
+					id="username"
+					name="username"
+					placeholder="thayrov"
+					autocomplete="username"
+					value={lastUsername}
+					required
+					maxlength="39"
+					pattern="[A-Za-z0-9](?:[A-Za-z0-9]|-){0,37}"
+				/>
 
-				<button type="button" disabled>Start Reading (UI scaffold)</button>
+				<button id="start-button" type="submit">Start Reading</button>
 			</form>
 
-			<p class="note">
-				Tier 1 stays public + no auth. Tier 2 unlocks deeper private analysis.
-			</p>
+			{hasError && (
+				<p id="home-error" class="error-banner" role="status">
+					Could not complete your reading. Check username/API key, then try again.
+				</p>
+			)}
+
+			<p id="home-note" class="note">No login needed. Public data only.</p>
 		</section>
 	</main>
 </Layout>
+
+<script type="module">
+	const messages = {
+		en: {
+			badge: 'Public profile reading',
+			title: 'Verokodo',
+			lead: 'Read a public developer profile and get a clear practical reading.',
+			usernameLabel: 'GitHub Username',
+			startButton: 'Start Reading',
+			note: 'No login needed. Public data only.',
+			error: 'Could not complete your reading. Check username/API key, then try again.'
+		},
+		es: {
+			badge: 'Lectura de perfil publico',
+			title: 'Verokodo',
+			lead: 'Analiza un perfil publico de desarrollador y recibe una lectura clara y practica.',
+			usernameLabel: 'Usuario de GitHub',
+			startButton: 'Iniciar lectura',
+			note: 'Sin login. Solo datos publicos.',
+			error: 'No se pudo completar la lectura. Revisa usuario/API key y vuelve a intentar.'
+		}
+	};
+
+	function detectLocale() {
+		const browserLocales = [
+			...(navigator.languages ?? []),
+			navigator.language,
+			Intl.DateTimeFormat().resolvedOptions().locale
+		].filter(Boolean);
+
+		return browserLocales.some((locale) => locale.toLowerCase().startsWith('es')) ? 'es' : 'en';
+	}
+
+	const locale = detectLocale();
+	const copy = messages[locale];
+	document.documentElement.lang = locale;
+
+	const localeInput = document.getElementById('locale-input');
+	if (localeInput instanceof HTMLInputElement) {
+		localeInput.value = locale;
+	}
+
+	const badge = document.getElementById('badge');
+	const homeTitle = document.getElementById('home-title');
+	const homeLead = document.getElementById('home-lead');
+	const usernameLabel = document.getElementById('username-label');
+	const startButton = document.getElementById('start-button');
+	const homeNote = document.getElementById('home-note');
+	const homeError = document.getElementById('home-error');
+
+	if (badge) badge.textContent = copy.badge;
+	if (homeTitle) homeTitle.textContent = copy.title;
+	if (homeLead) homeLead.textContent = copy.lead;
+	if (usernameLabel) usernameLabel.textContent = copy.usernameLabel;
+	if (startButton) startButton.textContent = copy.startButton;
+	if (homeNote) homeNote.textContent = copy.note;
+	if (homeError) homeError.textContent = copy.error;
+</script>
