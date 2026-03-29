@@ -12,6 +12,36 @@ type CrystalBallScene = {
   destroy: () => void
 }
 
+function createFallbackTexture(value: number): THREE.DataTexture {
+  const data = new Uint8Array([value, value, value, 255])
+  const texture = new THREE.DataTexture(data, 1, 1, THREE.RGBAFormat)
+  texture.needsUpdate = true
+  return texture
+}
+
+function configureTiling(texture: THREE.Texture): void {
+  texture.wrapS = THREE.RepeatWrapping
+  texture.wrapT = THREE.RepeatWrapping
+  texture.minFilter = THREE.LinearFilter
+  texture.magFilter = THREE.LinearFilter
+  texture.needsUpdate = true
+}
+
+function replaceUniformTexture(
+  uniforms: { value: THREE.Texture },
+  nextTexture: THREE.Texture,
+  managedTextures: Set<THREE.Texture>
+): void {
+  const previous = uniforms.value
+  uniforms.value = nextTexture
+  managedTextures.add(nextTexture)
+
+  if (previous !== nextTexture) {
+    managedTextures.delete(previous)
+    previous.dispose()
+  }
+}
+
 const vertexShader = `
 varying vec2 vUv;
 
@@ -27,13 +57,21 @@ precision highp float;
 uniform vec2 uResolution;
 uniform float uTime;
 uniform float uZoom;
+uniform sampler2D uNoise;
+uniform sampler2D uEnv;
 
 varying vec2 vUv;
+
+float textureNoise(vec3 p) {
+  vec2 uv = fract((p.xy * 0.135) + vec2(p.z * 0.11, p.z * 0.07));
+  return texture2D(uNoise, uv).r;
+}
 
 float hash(vec3 p) {
   p = fract(p * 0.3183099 + vec3(0.1));
   p *= 17.0;
-  return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+  float tex = textureNoise(p * 7.0);
+  return fract((p.x * p.y * p.z * (p.x + p.y + p.z)) + tex * 3.1);
 }
 
 float noise(vec3 p) {
@@ -110,6 +148,7 @@ void main() {
       float shell = smoothstep(1.0, 0.15, length(samplePos));
       vec3 swirlPos = samplePos * 2.9 + vec3(0.0, t * 1.7, t * 1.1);
       float n = fbm(swirlPos + vec3(sin(t + samplePos.y), cos(t + samplePos.x), 0.0));
+      n = mix(n, textureNoise(swirlPos * 2.2 + vec3(0.0, t, 0.0)), 0.24);
       density += n * shell * 0.05;
       glow += shell * 0.015;
     }
@@ -118,8 +157,11 @@ void main() {
     vec3 smokeBase = vec3(0.18, 0.42, 0.82);
     vec3 smokeHigh = vec3(0.82, 0.94, 1.0);
     vec3 smokeColor = mix(smokeBase, smokeHigh, clamp(density * 1.8, 0.0, 1.0));
+    vec2 envUv = normal.xz * 0.35 + vec2(0.5);
+    vec3 envColor = texture2D(uEnv, envUv).rgb;
 
     color = mix(color, smokeColor, clamp(density + glow, 0.0, 1.0));
+    color += envColor * (0.12 + fresnel * 0.24);
     color += vec3(0.35, 0.54, 0.92) * fresnel * 0.8;
 
     float halo = smoothstep(1.25, 0.95, length(pos));
@@ -140,10 +182,22 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
   camera.position.z = 1
 
   const geometry = new THREE.PlaneGeometry(2, 2)
+  const textureLoader = new THREE.TextureLoader()
+  const managedTextures = new Set<THREE.Texture>()
+  const noiseTexture = createFallbackTexture(84)
+  const environmentTexture = createFallbackTexture(148)
+
+  configureTiling(noiseTexture)
+  configureTiling(environmentTexture)
+  managedTextures.add(noiseTexture)
+  managedTextures.add(environmentTexture)
+
   const uniforms = {
     uTime: { value: 0 },
     uResolution: { value: new THREE.Vector2(1, 1) },
-    uZoom: { value: 0 }
+    uZoom: { value: 0 },
+    uNoise: { value: noiseTexture },
+    uEnv: { value: environmentTexture }
   }
 
   const material = new THREE.ShaderMaterial({
@@ -157,7 +211,33 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
+  renderer.setClearColor(0x000000, 0)
+  renderer.domElement.style.display = 'block'
   container.append(renderer.domElement)
+
+  textureLoader.load(
+    '/noise.png',
+    (texture) => {
+      configureTiling(texture)
+      replaceUniformTexture(uniforms.uNoise, texture, managedTextures)
+    },
+    undefined,
+    () => {
+      throw new Error('Failed to load /noise.png texture.')
+    }
+  )
+
+  textureLoader.load(
+    '/env_lat-lon.png',
+    (texture) => {
+      configureTiling(texture)
+      replaceUniformTexture(uniforms.uEnv, texture, managedTextures)
+    },
+    undefined,
+    () => {
+      throw new Error('Failed to load /env_lat-lon.png texture.')
+    }
+  )
 
   let targetZoom = 0
   let currentZoom = 0
@@ -167,7 +247,7 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
   const resize = (): void => {
     const width = container.clientWidth || window.innerWidth
     const height = container.clientHeight || window.innerHeight
-    renderer.setSize(width, height, false)
+    renderer.setSize(width, height, true)
     uniforms.uResolution.value.set(width, height)
   }
 
@@ -193,6 +273,9 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
       window.removeEventListener('resize', resize)
       geometry.dispose()
       material.dispose()
+      for (const texture of managedTextures) {
+        texture.dispose()
+      }
       renderer.dispose()
       renderer.domElement.remove()
     }
