@@ -1,0 +1,179 @@
+/*
+ * Purpose: Preserve styling for legacy `/loading` and `/result` routes plus shared utility cards.
+ * Interface: Route shell/layout classes and common typography/form blocks.
+ * Invariants: Legacy pages remain visually compatible with immersive home experience.
+ * Decisions: Keep legacy route styling isolated to simplify eventual deprecation.
+ */
+
+.home-shell {
+	display: grid;
+	place-items: center;
+	min-height: 100vh;
+	padding: clamp(1rem, 2vw, 2rem);
+}
+
+.glass-panel {
+	width: min(42rem, 100%);
+	padding: clamp(1.3rem, 2vw, 2rem);
+	border: 1px solid var(--panel-border);
+	border-radius: 1.2rem;
+	background: var(--panel);
+	backdrop-filter: blur(9px);
+	box-shadow:
+		0 1.2rem 4rem rgb(2 5 17 / 52%),
+		inset 0 0 0 1px rgb(130 181 255 / 6%);
+}
+
+.badge {
+	margin: 0;
+	font-family: "IBM Plex Mono", monospace;
+	font-size: 0.75rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--accent);
+}
+
+h1 {
+	margin: 0.35rem 0 0;
+	font-size: clamp(2.2rem, 7vw, 4rem);
+	line-height: 1.02;
+}
+
+.lead {
+	margin: 0.9rem 0 0;
+	max-width: 36ch;
+	color: var(--muted);
+}
+
+.oracle-form {
+	display: grid;
+	gap: 0.75rem;
+	margin-top: 1.35rem;
+}
+
+.oracle-form label {
+	font-family: "IBM Plex Mono", monospace;
+	font-size: 0.82rem;
+	color: var(--muted);
+}
+
+.oracle-form input,
+.oracle-form select,
+.oracle-form button {
+	appearance: none;
+	border-radius: 0.75rem;
+	border: 1px solid rgb(151 185 255 / 26%);
+	background: rgb(10 17 39 / 84%);
+	color: var(--text);
+	padding: 0.75rem 0.82rem;
+	font-family: inherit;
+}
+
+.oracle-form button {
+	margin-top: 0.3rem;
+	background: linear-gradient(120deg, rgb(49 118 255 / 82%), rgb(58 174 227 / 82%));
+	color: #f7fbff;
+	font-weight: 600;
+	cursor: pointer;
+	opacity: 1;
+}
+
+.oracle-form input:focus-visible,
+.oracle-form button:focus-visible {
+	outline: 2px solid rgb(131 211 255 / 80%);
+	outline-offset: 2px;
+}
+
+.error-banner {
+	margin: 0.95rem 0 0;
+	padding: 0.65rem 0.8rem;
+	border: 1px solid rgb(255 142 142 / 38%);
+	border-radius: 0.65rem;
+	background: rgb(88 23 29 / 44%);
+	color: #ffd4da;
+	font-size: 0.92rem;
+}
+
+.note {
+	margin: 0.95rem 0 0;
+	font-size: 0.92rem;
+	color: var(--muted);
+}
+
+.loading-shell,
+.result-shell {
+	display: grid;
+	place-items: center;
+	min-height: 100vh;
+	padding: clamp(1rem, 2vw, 2rem);
+}
+
+#oracle-experience .loading-panel {
+	width: min(26rem, 100%);
+	margin-inline: auto;
+	padding: 0.95rem;
+	text-align: left;
+	background: rgb(4 10 28 / 72%);
+	border: 1px solid rgb(145 191 255 / 24%);
+}
+
+.loading-progress {
+	margin-top: 0.65rem;
+	height: 0.45rem;
+	border-radius: 999px;
+	background: rgb(121 165 245 / 16%);
+	overflow: hidden;
+}
+
+#loading-progress-bar {
+	display: block;
+	width: 100%;
+	height: 100%;
+	transform-origin: left center;
+	transform: scaleX(var(--loading-progress, 0));
+	background: linear-gradient(90deg, rgb(111 170 255 / 94%), rgb(105 226 255 / 92%));
+	transition: transform 240ms ease;
+}
+
+.loading-meta {
+	margin: 0.55rem 0 0;
+	font-family: "IBM Plex Mono", monospace;
+	font-size: 0.75rem;
+	letter-spacing: 0.03em;
+	color: rgb(188 216 255 / 78%);
+}
+
+.loading-shell .loading-panel,
+.result-shell .result-panel {
+	width: min(56rem, 100%);
+	border: 1px solid var(--panel-border);
+	border-radius: 1.2rem;
+	background: var(--panel);
+	backdrop-filter: blur(9px);
+	box-shadow:
+		0 1.2rem 4rem rgb(2 5 17 / 52%),
+		inset 0 0 0 1px rgb(130 181 255 / 6%);
+}
+
+.loading-shell .loading-panel {
+	text-align: center;
+}
+
+.sigil {
+	width: 4rem;
+	height: 4rem;
+	margin: 1.5rem auto 0.5rem;
+	border-radius: 999px;
+	border: 2px solid rgb(114 212 255 / 50%);
+	border-top-color: rgb(114 212 255 / 100%);
+	animation: spin 1s linear infinite;
+}
+
+.loading-status {
+	margin: 0.2rem 0 0;
+	color: var(--muted);
+}
+
+.loading-actions {
+	justify-content: center;
+}

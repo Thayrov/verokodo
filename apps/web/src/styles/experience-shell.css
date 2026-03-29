@@ -1,0 +1,184 @@
+/*
+ * Purpose: Style the primary crystal-orb shell layout and top-level form framing.
+ * Interface: Structural selectors for `/` route experience chrome.
+ * Invariants: Layout keeps immersive frame and centered orb stage across breakpoints.
+ * Decisions: Separate shell framing from panel/state rules to reduce change amplification.
+ */
+
+.oracle-experience {
+	position: relative;
+	min-height: 100vh;
+	overflow: hidden;
+	background:
+		radial-gradient(95% 95% at 50% 42%, rgb(24 54 128 / 32%) 0%, transparent 58%),
+		linear-gradient(165deg, rgb(3 4 11 / 98%), rgb(2 6 18 / 98%));
+}
+
+.crystal-canvas {
+	position: absolute;
+	inset: 0;
+	transform: scale(1.35);
+	transition: transform 900ms cubic-bezier(0.2, 0.7, 0.18, 1);
+}
+
+.crystal-canvas canvas {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.orb-vignette {
+	position: absolute;
+	inset: 0;
+	background:
+		radial-gradient(circle at 50% 42%, transparent 24%, rgb(2 4 15 / 45%) 58%, rgb(2 3 9 / 88%) 100%),
+		radial-gradient(circle at 50% 115%, rgb(3 5 20 / 72%) 0%, transparent 52%);
+	pointer-events: none;
+}
+
+.experience-frame {
+	position: absolute;
+	inset: clamp(0.7rem, 1.8vw, 1.4rem);
+	padding: clamp(1rem, 2.4vw, 1.9rem);
+	border: 1px solid rgb(155 191 255 / 24%);
+	border-radius: 1.65rem;
+	background: linear-gradient(175deg, rgb(6 10 25 / 46%), rgb(2 6 18 / 58%));
+	box-shadow: inset 0 0 0 1px rgb(162 203 255 / 8%);
+	display: grid;
+	grid-template-rows: auto 1fr;
+	pointer-events: auto;
+	overflow: hidden;
+	isolation: isolate;
+}
+
+.experience-frame::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: repeating-linear-gradient(
+		to bottom,
+		rgb(90 224 90 / 15%) 0,
+		rgb(90 224 90 / 15%) 2px,
+		transparent 2px,
+		transparent 6px
+	);
+	background-size: 100% 6px;
+	animation: pan-overlay 44s infinite linear;
+	pointer-events: none;
+	opacity: 0.42;
+	z-index: 0;
+}
+
+.experience-frame > * {
+	position: relative;
+	z-index: 1;
+}
+
+.brand-row {
+	text-align: center;
+	transition: opacity 240ms ease;
+}
+
+#oracle-experience[data-state="result"] .brand-row,
+#oracle-experience[data-state="error"] .brand-row {
+	text-align: left;
+}
+
+.brand-title {
+	margin: 0;
+	font-size: clamp(2rem, 5vw, 3rem);
+	letter-spacing: 0.01em;
+	font-family: Cinzel, serif;
+}
+
+.orb-stage {
+	display: grid;
+	place-items: center;
+	padding: clamp(0.75rem, 2vw, 1.5rem) 0;
+}
+
+.orb-shell {
+	min-height: min(72vh, 42rem);
+	border: 0;
+	background: transparent;
+	box-shadow: none;
+	display: grid;
+	place-items: center;
+	position: relative;
+}
+
+.orb-content {
+	width: min(22rem, 100%);
+	max-height: 100%;
+	display: grid;
+	align-content: center;
+	gap: 0.85rem;
+	text-align: center;
+	transition: opacity 240ms ease;
+}
+
+#oracle-experience[data-state="result"] .orb-content {
+	width: min(52rem, 92vw);
+}
+
+.orb-note {
+	margin: 0;
+	color: var(--muted);
+	font-size: clamp(0.95rem, 2.2vw, 1.05rem);
+	line-height: 1.35;
+}
+
+.form-meta {
+	display: grid;
+	gap: 0.35rem;
+	text-align: left;
+}
+
+.form-actions-inline {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+
+.status-text[data-valid='valid'] {
+	color: var(--ok);
+}
+
+.status-text[data-valid='invalid'] {
+	color: var(--danger);
+}
+
+#username-shortcut {
+	margin: 0;
+	font-size: 0.82rem;
+}
+
+#username-shortcut kbd {
+	font-family: "IBM Plex Mono", monospace;
+	font-size: 0.72rem;
+	padding: 0.1rem 0.33rem;
+	border-radius: 0.35rem;
+	border: 1px solid rgb(161 205 255 / 34%);
+	background: rgb(7 15 34 / 82%);
+	color: var(--text);
+}
+
+.ghost-inline {
+	appearance: none;
+	border: 1px solid rgb(146 196 255 / 35%);
+	border-radius: 999px;
+	background: rgb(7 15 34 / 72%);
+	color: var(--muted);
+	padding: 0.3rem 0.58rem;
+	font-size: 0.76rem;
+	font-family: "IBM Plex Mono", monospace;
+	cursor: pointer;
+	transition: border-color var(--motion-fast) ease, color var(--motion-fast) ease;
+}
+
+.ghost-inline:hover {
+	color: var(--text);
+	border-color: rgb(173 218 255 / 66%);
+}

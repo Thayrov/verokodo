@@ -1,0 +1,36 @@
+/*
+ * Purpose: Define global visual tokens and base page defaults.
+ * Interface: Root CSS variables and reset-level selectors consumed by all routes.
+ * Invariants: Theme variables stay stable across route-specific styles.
+ * Decisions: Keep typography import and base tokens centralized for predictable cascade.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Fira+Code&family=IBM+Plex+Mono&display=swap");
+
+:root {
+	color-scheme: dark;
+	--bg: #050814;
+	--bg-glow: #13356e;
+	--panel: rgb(9 14 32 / 72%);
+	--panel-border: rgb(123 163 255 / 24%);
+	--text: #eef4ff;
+	--muted: #9ba9c6;
+	--accent: #72d4ff;
+	--ok: #83e4a5;
+	--danger: #ff9494;
+	--motion-fast: 180ms;
+	--motion-standard: 320ms;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	min-height: 100vh;
+	font-family: "Fira Code", system-ui;
+	color: var(--text);
+	background: #02030b;
+	line-height: 1.45;
+}

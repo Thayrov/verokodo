@@ -1,0 +1,65 @@
+/*
+ * Purpose: Define animation keyframes and global motion-responsive media rules.
+ * Interface: Keyframes and media queries consumed by shell/panel/component styles.
+ * Invariants: Reduced-motion mode suppresses non-essential animation.
+ * Decisions: Keep motion concerns centralized for easier accessibility tuning.
+ */
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes pan-overlay {
+	from {
+		background-position: 0 0;
+	}
+
+	to {
+		background-position: 0 -100%;
+	}
+}
+
+@keyframes reveal-up {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@media (max-width: 680px) {
+	.experience-frame {
+		inset: 0.45rem;
+		padding: 0.8rem;
+	}
+
+	.result-scroll {
+		padding: 3.4rem 0.95rem 1.15rem;
+	}
+
+	.result-panel .signal-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.experience-frame::before,
+	.sigil,
+	#oracle-experience[data-state="result"] .result-scroll > * {
+		animation: none;
+	}
+
+	* {
+		transition-duration: 1ms !important;
+	}
+
+	.crystal-canvas {
+		transform: none !important;
+	}
+}
