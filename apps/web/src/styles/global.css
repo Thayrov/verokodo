@@ -1,0 +1,109 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
+
+@import "tailwindcss";
+
+:root {
+	color-scheme: dark;
+	--bg: #050814;
+	--bg-glow: #13356e;
+	--panel: rgb(9 14 32 / 72%);
+	--panel-border: rgb(123 163 255 / 24%);
+	--text: #eef4ff;
+	--muted: #9ba9c6;
+	--accent: #72d4ff;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	min-height: 100vh;
+	font-family: "Space Grotesk", "Segoe UI", sans-serif;
+	color: var(--text);
+	background:
+		radial-gradient(120% 120% at 80% 10%, rgb(39 89 174 / 36%) 0%, transparent 50%),
+		radial-gradient(140% 140% at 20% 80%, rgb(21 134 185 / 22%) 0%, transparent 58%),
+		var(--bg);
+	line-height: 1.45;
+}
+
+.home-shell {
+	display: grid;
+	place-items: center;
+	min-height: 100vh;
+	padding: clamp(1rem, 2vw, 2rem);
+}
+
+.glass-panel {
+	width: min(42rem, 100%);
+	padding: clamp(1.3rem, 2vw, 2rem);
+	border: 1px solid var(--panel-border);
+	border-radius: 1.2rem;
+	background: var(--panel);
+	backdrop-filter: blur(9px);
+	box-shadow:
+		0 1.2rem 4rem rgb(2 5 17 / 52%),
+		inset 0 0 0 1px rgb(130 181 255 / 6%);
+}
+
+.badge {
+	margin: 0;
+	font-family: "IBM Plex Mono", monospace;
+	font-size: 0.75rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--accent);
+}
+
+h1 {
+	margin: 0.35rem 0 0;
+	font-size: clamp(2.2rem, 7vw, 4rem);
+	line-height: 1.02;
+}
+
+.lead {
+	margin: 0.9rem 0 0;
+	max-width: 36ch;
+	color: var(--muted);
+}
+
+.oracle-form {
+	display: grid;
+	gap: 0.75rem;
+	margin-top: 1.35rem;
+}
+
+.oracle-form label {
+	font-family: "IBM Plex Mono", monospace;
+	font-size: 0.82rem;
+	color: var(--muted);
+}
+
+.oracle-form input,
+.oracle-form select,
+.oracle-form button {
+	appearance: none;
+	border-radius: 0.75rem;
+	border: 1px solid rgb(151 185 255 / 26%);
+	background: rgb(10 17 39 / 84%);
+	color: var(--text);
+	padding: 0.75rem 0.82rem;
+	font-family: inherit;
+}
+
+.oracle-form button {
+	margin-top: 0.3rem;
+	background: linear-gradient(120deg, rgb(49 118 255 / 82%), rgb(58 174 227 / 82%));
+	color: #f7fbff;
+	font-weight: 600;
+	cursor: not-allowed;
+	opacity: 0.75;
+}
+
+.note {
+	margin: 0.95rem 0 0;
+	font-size: 0.92rem;
+	color: var(--muted);
+}

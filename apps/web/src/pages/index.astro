@@ -1,0 +1,32 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Verokodo | First Reading">
+	<main class="home-shell">
+		<section class="glass-panel">
+			<p class="badge">Hackaton CubePath 2026</p>
+			<h1>Verokodo</h1>
+			<p class="lead">
+				Read a public developer profile. Return a dramatic prophecy rooted in real signals.
+			</p>
+
+			<form class="oracle-form" aria-label="Start oracle reading">
+				<label for="provider">Provider</label>
+				<select id="provider" name="provider" disabled>
+					<option>GitHub</option>
+					<option>GitLab</option>
+				</select>
+
+				<label for="username">Username</label>
+				<input id="username" name="username" placeholder="thayrov" disabled />
+
+				<button type="button" disabled>Start Reading (UI scaffold)</button>
+			</form>
+
+			<p class="note">
+				Tier 1 stays public + no auth. Tier 2 unlocks deeper private analysis.
+			</p>
+		</section>
+	</main>
+</Layout>

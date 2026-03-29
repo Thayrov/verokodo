@@ -1,0 +1,13 @@
+{
+  "name": "verokodo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "bun run --filter @verokodo/web dev",
+    "build:web": "bun run --filter @verokodo/web build",
+    "dev:api": "bun run --filter @verokodo/api dev"
+  }
+}
