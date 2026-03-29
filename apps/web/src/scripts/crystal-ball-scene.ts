@@ -1,0 +1,200 @@
+/**
+ * Purpose: Render an animated crystal-ball scene with controllable zoom for the oracle flow.
+ * Interface: createCrystalBallScene(container) returns setZoomTarget/destroy controls.
+ * Invariants: render loop owns renderer lifecycle; zoom transitions are smooth and bounded.
+ * Decisions: use a compact custom shader inspired by the provided reference to keep integration simple.
+ */
+
+import * as THREE from 'three'
+
+type CrystalBallScene = {
+  setZoomTarget: (value: number) => void
+  destroy: () => void
+}
+
+const vertexShader = `
+varying vec2 vUv;
+
+void main() {
+  vUv = uv;
+  gl_Position = vec4(position, 1.0);
+}
+`
+
+const fragmentShader = `
+precision highp float;
+
+uniform vec2 uResolution;
+uniform float uTime;
+uniform float uZoom;
+
+varying vec2 vUv;
+
+float hash(vec3 p) {
+  p = fract(p * 0.3183099 + vec3(0.1));
+  p *= 17.0;
+  return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
+
+float noise(vec3 p) {
+  vec3 i = floor(p);
+  vec3 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+
+  float n000 = hash(i + vec3(0.0, 0.0, 0.0));
+  float n100 = hash(i + vec3(1.0, 0.0, 0.0));
+  float n010 = hash(i + vec3(0.0, 1.0, 0.0));
+  float n110 = hash(i + vec3(1.0, 1.0, 0.0));
+  float n001 = hash(i + vec3(0.0, 0.0, 1.0));
+  float n101 = hash(i + vec3(1.0, 0.0, 1.0));
+  float n011 = hash(i + vec3(0.0, 1.0, 1.0));
+  float n111 = hash(i + vec3(1.0, 1.0, 1.0));
+
+  float n00 = mix(n000, n100, f.x);
+  float n10 = mix(n010, n110, f.x);
+  float n01 = mix(n001, n101, f.x);
+  float n11 = mix(n011, n111, f.x);
+
+  float n0 = mix(n00, n10, f.y);
+  float n1 = mix(n01, n11, f.y);
+
+  return mix(n0, n1, f.z);
+}
+
+float fbm(vec3 p) {
+  float value = 0.0;
+  float amplitude = 0.5;
+
+  for (int i = 0; i < 5; i++) {
+    value += amplitude * noise(p);
+    p *= 2.1;
+    amplitude *= 0.5;
+  }
+
+  return value;
+}
+
+float sphereIntersect(vec3 ro, vec3 rd, float radius) {
+  float b = dot(ro, rd);
+  float c = dot(ro, ro) - radius * radius;
+  float h = b * b - c;
+  if (h < 0.0) return -1.0;
+  return -b - sqrt(h);
+}
+
+void main() {
+  vec2 uv = (vUv * 2.0 - 1.0);
+  uv.x *= uResolution.x / uResolution.y;
+
+  float t = uTime * 0.22;
+  vec3 bgTop = vec3(0.02, 0.04, 0.09);
+  vec3 bgBottom = vec3(0.00, 0.00, 0.02);
+  vec3 color = mix(bgBottom, bgTop, smoothstep(-0.9, 1.0, uv.y));
+
+  float stars = pow(hash(vec3(floor((uv + 1.5) * 90.0), 2.0)), 30.0);
+  color += stars * 0.18;
+
+  vec3 ro = vec3(0.0, 0.0, 2.45 - (uZoom * 1.35));
+  vec3 rd = normalize(vec3(uv, -1.7));
+
+  float hit = sphereIntersect(ro, rd, 1.0);
+  if (hit > 0.0) {
+    vec3 pos = ro + rd * hit;
+    vec3 normal = normalize(pos);
+
+    float density = 0.0;
+    float glow = 0.0;
+    for (int i = 0; i < 28; i++) {
+      float f = float(i) / 27.0;
+      vec3 samplePos = ro + rd * (hit + f * 1.6);
+      float shell = smoothstep(1.0, 0.15, length(samplePos));
+      vec3 swirlPos = samplePos * 2.9 + vec3(0.0, t * 1.7, t * 1.1);
+      float n = fbm(swirlPos + vec3(sin(t + samplePos.y), cos(t + samplePos.x), 0.0));
+      density += n * shell * 0.05;
+      glow += shell * 0.015;
+    }
+
+    float fresnel = pow(1.0 - max(dot(normal, -rd), 0.0), 2.2);
+    vec3 smokeBase = vec3(0.18, 0.42, 0.82);
+    vec3 smokeHigh = vec3(0.82, 0.94, 1.0);
+    vec3 smokeColor = mix(smokeBase, smokeHigh, clamp(density * 1.8, 0.0, 1.0));
+
+    color = mix(color, smokeColor, clamp(density + glow, 0.0, 1.0));
+    color += vec3(0.35, 0.54, 0.92) * fresnel * 0.8;
+
+    float halo = smoothstep(1.25, 0.95, length(pos));
+    color += vec3(0.18, 0.32, 0.75) * halo * 0.23;
+  }
+
+  gl_FragColor = vec4(color, 1.0);
+}
+`
+
+function clampZoom(value: number): number {
+  return Math.min(1.25, Math.max(0, value))
+}
+
+export function createCrystalBallScene(container: HTMLElement): CrystalBallScene {
+  const scene = new THREE.Scene()
+  const camera = new THREE.Camera()
+  camera.position.z = 1
+
+  const geometry = new THREE.PlaneGeometry(2, 2)
+  const uniforms = {
+    uTime: { value: 0 },
+    uResolution: { value: new THREE.Vector2(1, 1) },
+    uZoom: { value: 0 }
+  }
+
+  const material = new THREE.ShaderMaterial({
+    uniforms,
+    vertexShader,
+    fragmentShader
+  })
+
+  const mesh = new THREE.Mesh(geometry, material)
+  scene.add(mesh)
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
+  container.append(renderer.domElement)
+
+  let targetZoom = 0
+  let currentZoom = 0
+  let rafId = 0
+  const clock = new THREE.Clock()
+
+  const resize = (): void => {
+    const width = container.clientWidth || window.innerWidth
+    const height = container.clientHeight || window.innerHeight
+    renderer.setSize(width, height, false)
+    uniforms.uResolution.value.set(width, height)
+  }
+
+  const render = (): void => {
+    const elapsed = clock.getElapsedTime()
+    currentZoom += (targetZoom - currentZoom) * 0.05
+    uniforms.uTime.value = elapsed
+    uniforms.uZoom.value = currentZoom
+    renderer.render(scene, camera)
+    rafId = requestAnimationFrame(render)
+  }
+
+  resize()
+  window.addEventListener('resize', resize)
+  render()
+
+  return {
+    setZoomTarget(value: number) {
+      targetZoom = clampZoom(value)
+    },
+    destroy() {
+      cancelAnimationFrame(rafId)
+      window.removeEventListener('resize', resize)
+      geometry.dispose()
+      material.dispose()
+      renderer.dispose()
+      renderer.domElement.remove()
+    }
+  }
+}

@@ -1,101 +1,83 @@
 ---
 import Layout from '../layouts/Layout.astro';
-
-const lastUsername = Astro.url.searchParams.get('username') ?? '';
-const hasError = Astro.url.searchParams.get('error') === '1';
 ---
 
 <Layout title="Verokodo | First Reading">
-	<main class="home-shell">
-		<section class="glass-panel">
-			<p id="badge" class="badge">Public profile reading</p>
-			<h1 id="home-title">Verokodo</h1>
-			<p id="home-lead" class="lead">Read a public developer profile and get a clear practical reading.</p>
+	<main id="oracle-experience" class="oracle-experience" data-state="idle">
+		<div id="crystal-canvas" class="crystal-canvas" aria-hidden="true"></div>
+		<div class="orb-vignette" aria-hidden="true"></div>
 
-			<form class="oracle-form" aria-label="Start oracle reading" action="/loading" method="get">
-				<input type="hidden" name="provider" value="github" />
-				<input id="locale-input" type="hidden" name="locale" value="en" />
+		<section class="experience-frame">
+			<header class="brand-row">
+				<h1 id="home-title" class="brand-title">Verokodo</h1>
+			</header>
 
-				<label id="username-label" for="username">GitHub Username</label>
-				<input
-					id="username"
-					name="username"
-					placeholder="thayrov"
-					autocomplete="username"
-					value={lastUsername}
-					required
-					maxlength="39"
-					pattern="[A-Za-z0-9](?:[A-Za-z0-9]|-){0,37}"
-				/>
+			<section class="orb-stage">
+				<div class="orb-shell">
+					<div class="orb-content">
+						<form id="oracle-form" class="orb-form" aria-label="Start oracle reading">
+							<label id="username-label" for="username" class="sr-only">GitHub Username</label>
+							<div class="orb-input-shell">
+								<input
+									id="username"
+									name="username"
+									placeholder="thayrov"
+									autocomplete="username"
+									required
+									maxlength="39"
+									pattern="[A-Za-z0-9](?:[A-Za-z0-9]|-){0,37}"
+								/>
+								<button id="start-button" class="start-reading" type="submit">Go</button>
+							</div>
+						</form>
 
-				<button id="start-button" type="submit">Start Reading</button>
-			</form>
+						<p id="home-note" class="orb-note">Use your GitHub username to get a glimpse of your dev future.</p>
 
-			{hasError && (
-				<p id="home-error" class="error-banner" role="status">
-					Could not complete your reading. Check username/API key, then try again.
-				</p>
-			)}
+						<section id="loading-panel" class="sr-only" aria-live="polite">
+							<p id="loading-label">Reading in progress</p>
+							<p id="loading-status">Collecting profile signals...</p>
+						</section>
 
-			<p id="home-note" class="note">No login needed. Public data only.</p>
+						<section id="error-panel" class="oracle-panel error-panel" aria-live="polite">
+							<p id="error-text" class="error-banner"></p>
+							<div class="action-row compact-actions">
+								<button id="copy-error" type="button">Copy Error</button>
+								<button id="retry-reading" type="button">Try Again</button>
+							</div>
+						</section>
+
+						<section id="result-panel" class="oracle-panel result-panel" aria-live="polite">
+							<div class="result-scroll">
+								<p id="result-eyebrow" class="status-eyebrow">Reading complete</p>
+								<h2 id="result-title">Reading for @username</h2>
+								<p id="result-summary" class="lead"></p>
+
+								<article id="result-prophecy" class="prophecy-card"></article>
+
+								<article class="prophecy-card">
+									<h3 id="result-five-year-label" class="forecast-title">5-year outlook</h3>
+									<p id="result-five-year"></p>
+								</article>
+
+								<article class="prophecy-card">
+									<h3 id="result-ten-year-label" class="forecast-title">10-year outlook</h3>
+									<p id="result-ten-year"></p>
+								</article>
+
+								<div id="signal-grid" class="signal-grid"></div>
+
+								<div class="action-row compact-actions">
+									<button id="copy-share" type="button">Copy Share Pack</button>
+									<button id="copy-link" type="button">Copy Result Link</button>
+									<button id="new-reading" type="button">New Reading</button>
+								</div>
+							</div>
+						</section>
+					</div>
+				</div>
+			</section>
 		</section>
 	</main>
 </Layout>
 
-<script type="module">
-	const messages = {
-		en: {
-			badge: 'Public profile reading',
-			title: 'Verokodo',
-			lead: 'Read a public developer profile and get a clear practical reading.',
-			usernameLabel: 'GitHub Username',
-			startButton: 'Start Reading',
-			note: 'No login needed. Public data only.',
-			error: 'Could not complete your reading. Check username/API key, then try again.'
-		},
-		es: {
-			badge: 'Lectura de perfil publico',
-			title: 'Verokodo',
-			lead: 'Analiza un perfil publico de desarrollador y recibe una lectura clara y practica.',
-			usernameLabel: 'Usuario de GitHub',
-			startButton: 'Iniciar lectura',
-			note: 'Sin login. Solo datos publicos.',
-			error: 'No se pudo completar la lectura. Revisa usuario/API key y vuelve a intentar.'
-		}
-	};
-
-	function detectLocale() {
-		const browserLocales = [
-			...(navigator.languages ?? []),
-			navigator.language,
-			Intl.DateTimeFormat().resolvedOptions().locale
-		].filter(Boolean);
-
-		return browserLocales.some((locale) => locale.toLowerCase().startsWith('es')) ? 'es' : 'en';
-	}
-
-	const locale = detectLocale();
-	const copy = messages[locale];
-	document.documentElement.lang = locale;
-
-	const localeInput = document.getElementById('locale-input');
-	if (localeInput instanceof HTMLInputElement) {
-		localeInput.value = locale;
-	}
-
-	const badge = document.getElementById('badge');
-	const homeTitle = document.getElementById('home-title');
-	const homeLead = document.getElementById('home-lead');
-	const usernameLabel = document.getElementById('username-label');
-	const startButton = document.getElementById('start-button');
-	const homeNote = document.getElementById('home-note');
-	const homeError = document.getElementById('home-error');
-
-	if (badge) badge.textContent = copy.badge;
-	if (homeTitle) homeTitle.textContent = copy.title;
-	if (homeLead) homeLead.textContent = copy.lead;
-	if (usernameLabel) usernameLabel.textContent = copy.usernameLabel;
-	if (startButton) startButton.textContent = copy.startButton;
-	if (homeNote) homeNote.textContent = copy.note;
-	if (homeError) homeError.textContent = copy.error;
-</script>
+<script src="../scripts/oracle-experience.js"></script>
