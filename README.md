@@ -20,13 +20,14 @@ Tier 1 is public-data only: no auth and no private repository access.
 
 ## Current Status
 
-- Web routes: `/` -> `/loading` -> `/result`
+- Primary web flow: single interactive page on `/` (idle -> loading -> result)
 - API routes: `GET /`, `GET /health`, `POST /oracle`
 - `POST /oracle` pipeline: request validation, GitHub ingestion, AI generation, response validation
 
 ## Stack
 
 - Frontend: Astro (`apps/web`)
+- Visual engine: Three.js shader scene for crystal-ball animation
 - Backend: Hono on Bun (`apps/api`)
 - Shared contracts: Zod schemas (`packages/shared`)
 - AI SDK: Vercel AI SDK with Google provider

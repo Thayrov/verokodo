@@ -12,9 +12,9 @@ Astro frontend for the Verokodo immersive oracle experience.
 
 ### Routes
 
-- `/` - username input
-- `/loading` - profile fetch + oracle request transition
-- `/result` - final prophecy + share actions
+- `/` - primary crystal-ball experience (idle -> loading -> result)
+- `/loading` - legacy transition route
+- `/result` - legacy result route
 
 ### Optional env
 

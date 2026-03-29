@@ -10,14 +10,14 @@ This document records durable product and architecture decisions for the hackath
 
 ## D-002: Frontend is Astro (not a React SPA)
 
-- **Decision:** use Astro pages with View Transitions and CSS animation.
-- **Why:** simpler implementation and less shipped client JS.
-- **Implication:** immersion comes from design and transitions, not WebGL.
+- **Decision:** use Astro with a primary single-page flow and a focused Three.js crystal-ball scene.
+- **Why:** preserves simple app structure while enabling the immersive visual identity we need.
+- **Implication:** WebGL is allowed for the hero experience; surrounding UI and orchestration stay lightweight.
 
 ## D-003: Keep UI architecture intentionally simple
 
 - **Decision:** avoid heavy state libraries and complex client architecture.
-- **Why:** flow is short and linear (`/` -> `/loading` -> `/result`).
+- **Why:** flow is still short and linear (idle -> loading -> result) even when rendered in one interactive page.
 - **Implication:** faster iteration and lower breakage risk before deadline.
 
 ## D-004: Backend stack is Bun + Hono
