@@ -19,6 +19,14 @@ import Layout from '../layouts/Layout.astro';
 			<div class="signal-grid" id="signal-grid"></div>
 
 			<article id="result-prophecy" class="prophecy-card"></article>
+			<article class="prophecy-card">
+				<h2 id="result-five-year-label" class="forecast-title">5-year outlook</h2>
+				<p id="result-five-year"></p>
+			</article>
+			<article class="prophecy-card">
+				<h2 id="result-ten-year-label" class="forecast-title">10-year outlook</h2>
+				<p id="result-ten-year"></p>
+			</article>
 
 			<div class="action-row">
 				<button id="copy-share" type="button">Copy Share Line</button>
@@ -55,6 +63,8 @@ import Layout from '../layouts/Layout.astro';
 			publicRepos: 'Public repos',
 			topLanguages: 'Top languages',
 			recentRepos: 'Recent repos',
+			fiveYearLabel: '5-year outlook',
+			tenYearLabel: '10-year outlook',
 			unknown: 'Unknown'
 		},
 		es: {
@@ -72,6 +82,8 @@ import Layout from '../layouts/Layout.astro';
 			publicRepos: 'Repos publicos',
 			topLanguages: 'Lenguajes principales',
 			recentRepos: 'Repos recientes',
+			fiveYearLabel: 'Proyeccion a 5 anos',
+			tenYearLabel: 'Proyeccion a 10 anos',
 			unknown: 'Desconocido'
 		}
 	};
@@ -97,6 +109,10 @@ import Layout from '../layouts/Layout.astro';
 	const titleNode = document.getElementById('result-title');
 	const summaryNode = document.getElementById('result-summary');
 	const prophecyNode = document.getElementById('result-prophecy');
+	const fiveYearNode = document.getElementById('result-five-year');
+	const tenYearNode = document.getElementById('result-ten-year');
+	const fiveYearLabelNode = document.getElementById('result-five-year-label');
+	const tenYearLabelNode = document.getElementById('result-ten-year-label');
 	const signalsNode = document.getElementById('signal-grid');
 	const copyShareNode = document.getElementById('copy-share');
 	const copyLinkNode = document.getElementById('copy-link');
@@ -113,6 +129,8 @@ import Layout from '../layouts/Layout.astro';
 	if (newReadingNode) newReadingNode.textContent = copy.newReading;
 	if (copyShareNode) copyShareNode.textContent = copy.copyShare;
 	if (copyLinkNode) copyLinkNode.textContent = copy.copyLink;
+	if (fiveYearLabelNode) fiveYearLabelNode.textContent = copy.fiveYearLabel;
+	if (tenYearLabelNode) tenYearLabelNode.textContent = copy.tenYearLabel;
 
 	function decodeReading(serialized) {
 		const parsed = JSON.parse(decodeURIComponent(serialized));
@@ -129,6 +147,8 @@ import Layout from '../layouts/Layout.astro';
 			typeof candidate.username !== 'string' ||
 			typeof candidate.summary !== 'string' ||
 			typeof candidate.prophecy !== 'string' ||
+			typeof candidate.fiveYearOutlook !== 'string' ||
+			typeof candidate.tenYearOutlook !== 'string' ||
 			typeof candidate.shareText !== 'string' ||
 			!candidate.signals ||
 			typeof candidate.signals !== 'object'
@@ -182,6 +202,8 @@ import Layout from '../layouts/Layout.astro';
 			if (newReadingNode) newReadingNode.textContent = copy.newReading;
 			if (copyShareNode) copyShareNode.textContent = copy.copyShare;
 			if (copyLinkNode) copyLinkNode.textContent = copy.copyLink;
+			if (fiveYearLabelNode) fiveYearLabelNode.textContent = copy.fiveYearLabel;
+			if (tenYearLabelNode) tenYearLabelNode.textContent = copy.tenYearLabel;
 
 			if (emptyNode) emptyNode.hidden = true;
 			if (readyNode) readyNode.hidden = false;
@@ -197,6 +219,14 @@ import Layout from '../layouts/Layout.astro';
 					.map((line) => `<p>${line}</p>`)
 					.join('');
 				prophecyNode.innerHTML = paragraphs;
+			}
+
+			if (fiveYearNode) {
+				fiveYearNode.textContent = reading.fiveYearOutlook;
+			}
+
+			if (tenYearNode) {
+				tenYearNode.textContent = reading.tenYearOutlook;
 			}
 
 			mountSignal(copy.followers, String(reading.signals.followers));

@@ -34,6 +34,8 @@ export const oracleResponseSchema = z.object({
   generatedAt: z.string().datetime({ offset: true }),
   summary: z.string().trim().min(30).max(240),
   prophecy: z.string().trim().min(120).max(900),
+  fiveYearOutlook: z.string().trim().min(50).max(420),
+  tenYearOutlook: z.string().trim().min(50).max(420),
   shareText: z.string().trim().min(30).max(280),
   signals: oracleSignalsSchema
 })

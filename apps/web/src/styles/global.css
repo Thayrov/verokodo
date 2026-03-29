@@ -211,6 +211,15 @@ h1 {
 	margin-top: 0.8rem;
 }
 
+.forecast-title {
+	margin: 0 0 0.55rem;
+	font-size: 0.98rem;
+	font-family: "IBM Plex Mono", monospace;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--accent);
+}
+
 .action-row {
 	display: flex;
 	flex-wrap: wrap;

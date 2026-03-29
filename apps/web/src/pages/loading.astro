@@ -117,7 +117,12 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL ?? 'http://localhost:3000
 		}
 
 		const candidate = payload;
-		if (typeof candidate.username !== 'string' || typeof candidate.summary !== 'string') {
+		if (
+			typeof candidate.username !== 'string' ||
+			typeof candidate.summary !== 'string' ||
+			typeof candidate.fiveYearOutlook !== 'string' ||
+			typeof candidate.tenYearOutlook !== 'string'
+		) {
 			throw new Error(copy.missingFields);
 		}
 

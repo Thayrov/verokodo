@@ -16,6 +16,8 @@ import type { OracleRequest, OracleResponse, OracleSignals } from '@verokodo/sha
 const oracleDraftSchema = z.object({
   summary: z.string().trim().min(30).max(240),
   prophecy: z.string().trim().min(120).max(900),
+  fiveYearOutlook: z.string().trim().min(50).max(420),
+  tenYearOutlook: z.string().trim().min(50).max(420),
   shareText: z.string().trim().min(30).max(280)
 })
 
@@ -39,6 +41,8 @@ function buildPrompt(request: OracleRequest, signals: OracleSignals): string {
     'Output fields:',
     '- summary: 1-2 short sentences.',
     '- prophecy: 2-3 short paragraphs with actionable direction.',
+    '- fiveYearOutlook: one compact paragraph on likely professional position in 5 years.',
+    '- tenYearOutlook: one compact paragraph on likely professional position in 10 years.',
     '- shareText: one punchy line for social sharing.',
     '',
     'Public profile signals:',
@@ -83,6 +87,8 @@ export async function generateOracleReading(
     generatedAt: new Date().toISOString(),
     summary: object.summary,
     prophecy: object.prophecy,
+    fiveYearOutlook: object.fiveYearOutlook,
+    tenYearOutlook: object.tenYearOutlook,
     shareText: object.shareText,
     signals
   })
