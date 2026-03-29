@@ -116,14 +116,12 @@ body {
 }
 
 .orb-shell {
-	width: min(94vw, 62rem);
 	min-height: min(72vh, 42rem);
 	border: 0;
 	background: transparent;
 	box-shadow: none;
 	display: grid;
 	place-items: center;
-	padding: clamp(1rem, 2.4vw, 1.35rem);
 	position: relative;
 }
 
@@ -181,6 +179,7 @@ body {
 	background: rgb(7 14 34 / 84%);
 	border: 1px solid rgb(165 205 255 / 34%);
 	box-shadow: 0 0 0 1px rgb(157 194 255 / 10%) inset;
+	align-items: center;
 }
 
 .orb-input-shell input {
@@ -192,6 +191,7 @@ body {
 	font-family: inherit;
 	font-size: 1rem;
 	min-width: 0;
+	border-radius: 20px;
 }
 
 .orb-input-shell input::placeholder {
@@ -231,17 +231,51 @@ body {
 
 .result-panel {
 	width: 100%;
-	max-height: min(72vh, 34rem);
+	max-height: min(64dvh, 34rem);
 	padding: 0;
+	position: relative;
 }
 
 .result-scroll {
-	max-height: min(72vh, 34rem);
+	max-height: min(64dvh, 32rem);
 	overflow: auto;
-	padding: 1rem;
+	padding: 3.6rem 3rem 1.35rem;
 	text-align: left;
 	scrollbar-width: thin;
 	scrollbar-color: rgb(121 165 245 / 68%) transparent;
+}
+
+.go-back-button {
+	appearance: none;
+	position: absolute;
+	top: 0.75rem;
+	right: 0.75rem;
+	height: 2.2rem;
+	padding: 0 0.85rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid rgb(146 196 255 / 36%);
+	border-radius: 999px;
+	background: rgb(5 17 34 / 52%);
+	backdrop-filter: blur(12px);
+	color: rgb(228 242 255 / 94%);
+	font-family: "IBM Plex Mono", monospace;
+	font-size: 0.78rem;
+	letter-spacing: 0.04em;
+	cursor: pointer;
+	z-index: 2;
+	transition: background-color 180ms ease, border-color 180ms ease;
+}
+
+.go-back-button:hover {
+	background: rgb(96 208 255 / 22%);
+	border-color: rgb(154 221 255 / 72%);
+}
+
+.go-back-button:focus-visible {
+	outline: 2px solid rgb(131 211 255 / 80%);
+	outline-offset: 2px;
 }
 
 .result-panel .signal-grid {
@@ -279,12 +313,28 @@ body {
 	pointer-events: auto;
 }
 
-#oracle-experience[data-state="result"] #result-panel,
-#oracle-experience[data-state="error"] #error-panel {
+#oracle-experience[data-state="result"] #result-panel {
 	opacity: 1;
-	max-height: min(68vh, 24rem);
+	max-height: min(64dvh, 34rem);
 	transform: translateY(0);
 	pointer-events: auto;
+}
+
+#oracle-experience[data-state="error"] #error-panel {
+	opacity: 1;
+	max-height: min(40dvh, 16rem);
+	transform: translateY(0);
+	pointer-events: auto;
+}
+
+#oracle-experience[data-state="result"] .orb-stage,
+#oracle-experience[data-state="error"] .orb-stage {
+	align-items: start;
+}
+
+#oracle-experience[data-state="result"] .orb-content,
+#oracle-experience[data-state="error"] .orb-content {
+	align-content: start;
 }
 
 #oracle-experience[data-state="loading"] .brand-row,
@@ -415,7 +465,6 @@ h1 {
 .loading-panel,
 .result-panel {
 	width: min(56rem, 100%);
-	padding: clamp(1.3rem, 2vw, 2rem);
 	border: 1px solid var(--panel-border);
 	border-radius: 1.2rem;
 	background: var(--panel);

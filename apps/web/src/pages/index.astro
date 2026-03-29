@@ -47,6 +47,7 @@ import Layout from '../layouts/Layout.astro';
 						</section>
 
 						<section id="result-panel" class="oracle-panel result-panel" aria-live="polite">
+							<button id="go-back" class="go-back-button" type="button">Go back</button>
 							<div class="result-scroll">
 								<p id="result-eyebrow" class="status-eyebrow">Reading complete</p>
 								<h2 id="result-title">Reading for @username</h2>
@@ -65,12 +66,6 @@ import Layout from '../layouts/Layout.astro';
 								</article>
 
 								<div id="signal-grid" class="signal-grid"></div>
-
-								<div class="action-row compact-actions">
-									<button id="copy-share" type="button">Copy Share Pack</button>
-									<button id="copy-link" type="button">Copy Result Link</button>
-									<button id="new-reading" type="button">New Reading</button>
-								</div>
 							</div>
 						</section>
 					</div>

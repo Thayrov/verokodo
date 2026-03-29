@@ -20,9 +20,7 @@ const messages = {
     resultTitlePrefix: 'Reading for',
     fiveYearLabel: '5-year outlook',
     tenYearLabel: '10-year outlook',
-    copyShare: 'Copy Share Pack',
-    copyLink: 'Copy Result Link',
-    newReading: 'New Reading',
+    goBack: 'Go back',
     copied: 'Copied',
     followers: 'Followers',
     publicRepos: 'Public repos',
@@ -50,9 +48,7 @@ const messages = {
     resultTitlePrefix: 'Lectura de',
     fiveYearLabel: 'Proyeccion a 5 anos',
     tenYearLabel: 'Proyeccion a 10 anos',
-    copyShare: 'Copiar pack para compartir',
-    copyLink: 'Copiar link de resultado',
-    newReading: 'Nueva lectura',
+    goBack: 'Volver',
     copied: 'Copiado',
     followers: 'Seguidores',
     publicRepos: 'Repos publicos',
@@ -97,9 +93,7 @@ const resultTenYear = document.getElementById('result-ten-year')
 const resultFiveYearLabel = document.getElementById('result-five-year-label')
 const resultTenYearLabel = document.getElementById('result-ten-year-label')
 const signalGrid = document.getElementById('signal-grid')
-const copyShareButton = document.getElementById('copy-share')
-const copyLinkButton = document.getElementById('copy-link')
-const newReadingButton = document.getElementById('new-reading')
+const goBackButton = document.getElementById('go-back')
 
 if (!(crystalCanvas instanceof HTMLElement) || !(experience instanceof HTMLElement)) {
   throw new Error('Crystal canvas mount failed.')
@@ -109,7 +103,6 @@ const crystal = createCrystalBallScene(crystalCanvas)
 crystal.setZoomTarget(0.08)
 
 let latestError = ''
-let latestReading = null
 
 const badge = document.getElementById('home-badge')
 const homeTitle = document.getElementById('home-title')
@@ -134,9 +127,7 @@ if (retryReadingButton) retryReadingButton.textContent = copy.retryButton
 if (resultEyebrow) resultEyebrow.textContent = copy.resultEyebrow
 if (resultFiveYearLabel) resultFiveYearLabel.textContent = copy.fiveYearLabel
 if (resultTenYearLabel) resultTenYearLabel.textContent = copy.tenYearLabel
-if (copyShareButton) copyShareButton.textContent = copy.copyShare
-if (copyLinkButton) copyLinkButton.textContent = copy.copyLink
-if (newReadingButton) newReadingButton.textContent = copy.newReading
+if (goBackButton) goBackButton.textContent = copy.goBack
 
 function setState(nextState) {
   experience.dataset.state = nextState
@@ -212,7 +203,6 @@ function showError(message) {
 
 function resetToIdle() {
   latestError = ''
-  latestReading = null
   if (resultSummary) resultSummary.textContent = ''
   if (resultProphecy) resultProphecy.innerHTML = ''
   if (resultFiveYear) resultFiveYear.textContent = ''
@@ -261,7 +251,6 @@ oracleForm?.addEventListener('submit', async (event) => {
     }
 
     const reading = parseReading(await response.json())
-    latestReading = reading
 
     if (loadingStatus) loadingStatus.textContent = copy.loadingStatusC
     if (resultTitle) resultTitle.textContent = `${copy.resultTitlePrefix} @${reading.username}`
@@ -302,33 +291,7 @@ retryReadingButton?.addEventListener('click', () => {
   crystal.setZoomTarget(0.08)
 })
 
-copyShareButton?.addEventListener('click', async () => {
-  if (!latestReading) return
-  const sharePack = [
-    latestReading.shareText,
-    `${copy.fiveYearLabel}: ${latestReading.fiveYearOutlook}`,
-    `${copy.tenYearLabel}: ${latestReading.tenYearOutlook}`
-  ].join('\n\n')
-  await navigator.clipboard.writeText(sharePack)
-  if (copyShareButton instanceof HTMLButtonElement) {
-    copyShareButton.textContent = copy.copied
-    setTimeout(() => {
-      copyShareButton.textContent = copy.copyShare
-    }, 1200)
-  }
-})
-
-copyLinkButton?.addEventListener('click', async () => {
-  await navigator.clipboard.writeText(window.location.href)
-  if (copyLinkButton instanceof HTMLButtonElement) {
-    copyLinkButton.textContent = copy.copied
-    setTimeout(() => {
-      copyLinkButton.textContent = copy.copyLink
-    }, 1200)
-  }
-})
-
-newReadingButton?.addEventListener('click', () => {
+goBackButton?.addEventListener('click', () => {
   resetToIdle()
 })
 
