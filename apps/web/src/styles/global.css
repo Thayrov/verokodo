@@ -349,7 +349,7 @@ body {
 }
 
 #oracle-experience[data-state="loading"] .crystal-canvas {
-	transform: scale(1.19);
+	transform: scale(1.9);
 }
 
 #oracle-experience[data-state="result"] .crystal-canvas {

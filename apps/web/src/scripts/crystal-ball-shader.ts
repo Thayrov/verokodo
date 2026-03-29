@@ -205,10 +205,10 @@ vec3 lighting(vec3 sp, vec3 camPos, float dist, float field) {
 
 void main() {
   float activity = clamp(uActivity, 0.0, 1.5);
-  float smokeTime = -10000.0 + uTime * (0.22 + activity * 0.22);
-  float orbitTime = uTime * (0.14 + activity * 0.14);
+  float smokeTime = -10000.0 + uTime * (0.16 + activity * 0.14);
+  float orbitTime = uTime * (0.1 + activity * 0.08);
   gTime = smokeTime;
-  rotmat = rotationMatrix(vec3(0.0, 1.0, 0.0), smokeTime * 0.72);
+  rotmat = rotationMatrix(vec3(0.0, 1.0, 0.0), smokeTime * 0.62);
 
   vec2 aspect = vec2(uResolution.x / uResolution.y, 1.0);
   vec2 uv = (2.0 * gl_FragCoord.xy / uResolution.xy - 1.0) * aspect;
@@ -217,7 +217,7 @@ void main() {
   movement = vec3(0.0);
 
   vec3 lookAt = vec3(0.0, 0.0, 0.0);
-  float orbitAmplitude = 0.016 + activity * 0.02;
+  float orbitAmplitude = 0.012 + activity * 0.015;
   vec3 cameraPosition = vec3(
     sin(orbitTime * 1.8) * orbitAmplitude,
     1.0 + cos(orbitTime * 1.3) * orbitAmplitude * 0.5,

@@ -133,7 +133,7 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
   const render = (): void => {
     const elapsed = clock.getElapsedTime()
     currentZoom += (targetZoom - currentZoom) * 0.05
-    currentActivity += (targetActivity - currentActivity) * 0.06
+    currentActivity += (targetActivity - currentActivity) * 0.05
     uniforms.uTime.value = elapsed
     uniforms.uZoom.value = currentZoom
     uniforms.uActivity.value = currentActivity

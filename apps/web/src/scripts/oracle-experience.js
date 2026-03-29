@@ -103,7 +103,7 @@ const crystal = createCrystalBallScene(crystalCanvas)
 
 const crystalMoments = {
   beforeSearch: { zoom: 0.08, activity: 0.45 },
-  loading: { zoom: 1.02, activity: 1.25 },
+  loading: { zoom: 1.18, activity: 1.05 },
   afterSearch: { zoom: 0.18, activity: 0.58 }
 }
 
