@@ -62,11 +62,35 @@ body {
 	border: 1px solid rgb(155 191 255 / 24%);
 	border-radius: 1.65rem;
 	background: linear-gradient(175deg, rgb(6 10 25 / 46%), rgb(2 6 18 / 58%));
-	backdrop-filter: blur(10px);
 	box-shadow: inset 0 0 0 1px rgb(162 203 255 / 8%);
 	display: grid;
 	grid-template-rows: auto 1fr;
 	pointer-events: auto;
+	overflow: hidden;
+	isolation: isolate;
+}
+
+.experience-frame::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: repeating-linear-gradient(
+		to bottom,
+		rgb(90 224 90 / 15%) 0,
+		rgb(90 224 90 / 15%) 2px,
+		transparent 2px,
+		transparent 6px
+	);
+	background-size: 100% 6px;
+	animation: pan-overlay 44s infinite linear;
+	pointer-events: none;
+	opacity: 0.42;
+	z-index: 0;
+}
+
+.experience-frame > * {
+	position: relative;
+	z-index: 1;
 }
 
 .brand-row {
@@ -515,5 +539,15 @@ h1 {
 @keyframes spin {
 	to {
 		transform: rotate(360deg);
+	}
+}
+
+@keyframes pan-overlay {
+	from {
+		background-position: 0 0;
+	}
+
+	to {
+		background-position: 0 -100%;
 	}
 }
