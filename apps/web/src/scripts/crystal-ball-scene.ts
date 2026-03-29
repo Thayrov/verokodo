@@ -129,9 +129,6 @@ void main() {
   vec3 bgBottom = vec3(0.00, 0.00, 0.02);
   vec3 color = mix(bgBottom, bgTop, smoothstep(-0.9, 1.0, uv.y));
 
-  float stars = pow(hash(vec3(floor((uv + 1.5) * 90.0), 2.0)), 30.0);
-  color += stars * 0.18;
-
   vec3 ro = vec3(0.0, 0.0, 2.45 - (uZoom * 1.35));
   vec3 rd = normalize(vec3(uv, -1.7));
 
@@ -142,30 +139,52 @@ void main() {
 
     float density = 0.0;
     float glow = 0.0;
-    for (int i = 0; i < 28; i++) {
-      float f = float(i) / 27.0;
-      vec3 samplePos = ro + rd * (hit + f * 1.6);
-      float shell = smoothstep(1.0, 0.15, length(samplePos));
-      vec3 swirlPos = samplePos * 2.9 + vec3(0.0, t * 1.7, t * 1.1);
-      float n = fbm(swirlPos + vec3(sin(t + samplePos.y), cos(t + samplePos.x), 0.0));
-      n = mix(n, textureNoise(swirlPos * 2.2 + vec3(0.0, t, 0.0)), 0.24);
-      density += n * shell * 0.05;
-      glow += shell * 0.015;
+    float transmittance = 1.0;
+    vec3 volumeColor = vec3(0.0);
+    const float marchDistance = 1.75;
+    const float stepLength = marchDistance / 32.0;
+
+    for (int i = 0; i < 32; i++) {
+      float f = float(i) / 31.0;
+      vec3 samplePos = ro + rd * (hit + f * marchDistance);
+      float radius = length(samplePos);
+      float shell = 1.0 - smoothstep(0.14, 1.0, radius);
+      float centerFade = smoothstep(0.0, 0.52, radius);
+      float edgeFade = 1.0 - smoothstep(0.58, 1.02, radius);
+
+      vec3 swirlPos = samplePos * 3.1 + vec3(0.0, t * 1.35, t * 0.9);
+      float largeShape = fbm(swirlPos + vec3(sin(t + samplePos.y * 0.8), cos(t + samplePos.x * 0.7), t * 0.12));
+      float wisps = fbm(swirlPos * 1.9 + vec3(t * 0.42, -t * 0.26, t * 0.34));
+      float grain = textureNoise(swirlPos * 2.4 + vec3(0.0, t * 0.9, t * 0.45));
+
+      float cloud = mix(largeShape, wisps, 0.58);
+      cloud = mix(cloud, grain, 0.22);
+
+      float sampleDensity = smoothstep(0.34, 0.9, cloud) * shell * centerFade * edgeFade;
+      float absorption = sampleDensity * 1.45 * stepLength;
+      float alpha = clamp(1.0 - exp(-absorption), 0.0, 1.0);
+
+      vec3 sampleColor = mix(vec3(0.28, 0.31, 0.37), vec3(0.93, 0.95, 0.98), clamp(cloud * 1.18, 0.0, 1.0));
+      volumeColor += sampleColor * alpha * transmittance;
+      transmittance *= 1.0 - alpha;
+      density += sampleDensity;
+      glow += shell * 0.01 * transmittance;
     }
 
+    float volumeAlpha = clamp(1.0 - transmittance, 0.0, 1.0);
+    float haze = clamp(density * 0.24, 0.0, 1.0);
     float fresnel = pow(1.0 - max(dot(normal, -rd), 0.0), 2.2);
-    vec3 smokeBase = vec3(0.18, 0.42, 0.82);
-    vec3 smokeHigh = vec3(0.82, 0.94, 1.0);
-    vec3 smokeColor = mix(smokeBase, smokeHigh, clamp(density * 1.8, 0.0, 1.0));
+    vec3 smokeTint = mix(vec3(0.28, 0.34, 0.52), vec3(0.86, 0.9, 1.0), haze);
     vec2 envUv = normal.xz * 0.35 + vec2(0.5);
     vec3 envColor = texture2D(uEnv, envUv).rgb;
 
-    color = mix(color, smokeColor, clamp(density + glow, 0.0, 1.0));
-    color += envColor * (0.12 + fresnel * 0.24);
-    color += vec3(0.35, 0.54, 0.92) * fresnel * 0.8;
+    color = mix(color, volumeColor, clamp(volumeAlpha * 1.25 + glow, 0.0, 1.0));
+    color = mix(color, vec3(0.9, 0.93, 0.99), volumeAlpha * 0.35);
+    color += envColor * (0.1 + fresnel * 0.2);
+    color += smokeTint * fresnel * 0.62;
 
-    float halo = smoothstep(1.25, 0.95, length(pos));
-    color += vec3(0.18, 0.32, 0.75) * halo * 0.23;
+    float halo = smoothstep(1.22, 0.92, length(pos));
+    color += mix(vec3(0.22, 0.29, 0.52), vec3(0.66, 0.73, 0.92), volumeAlpha) * halo * 0.2;
   }
 
   gl_FragColor = vec4(color, 1.0);
