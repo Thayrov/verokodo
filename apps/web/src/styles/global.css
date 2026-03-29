@@ -92,14 +92,11 @@ body {
 }
 
 .orb-shell {
-	width: min(84vw, 28rem);
-	aspect-ratio: 1 / 1;
-	border-radius: 50%;
-	border: 2px solid rgb(171 214 255 / 34%);
-	background: radial-gradient(circle at 50% 43%, rgb(167 220 255 / 5%), rgb(7 16 41 / 34%));
-	box-shadow:
-		0 0 0 1px rgb(172 214 255 / 12%) inset,
-		0 1rem 3.2rem rgb(0 0 0 / 48%);
+	width: min(94vw, 62rem);
+	min-height: min(72vh, 42rem);
+	border: 0;
+	background: transparent;
+	box-shadow: none;
 	display: grid;
 	place-items: center;
 	padding: clamp(1rem, 2.4vw, 1.35rem);
@@ -107,13 +104,17 @@ body {
 }
 
 .orb-content {
-	width: min(20rem, 100%);
+	width: min(22rem, 100%);
 	max-height: 100%;
 	display: grid;
 	align-content: center;
 	gap: 0.85rem;
 	text-align: center;
 	transition: opacity 240ms ease;
+}
+
+#oracle-experience[data-state="result"] .orb-content {
+	width: min(52rem, 92vw);
 }
 
 .orb-note {
@@ -192,7 +193,7 @@ body {
 .oracle-panel {
 	padding: 0;
 	border-radius: 1rem;
-	border: 1px solid rgb(157 196 255 / 24%);
+	border: 0;
 	background: rgb(4 10 28 / 64%);
 }
 
@@ -206,14 +207,14 @@ body {
 
 .result-panel {
 	width: 100%;
-	max-height: min(62vh, 22rem);
+	max-height: min(72vh, 34rem);
 	padding: 0;
 }
 
 .result-scroll {
-	max-height: min(62vh, 22rem);
+	max-height: min(72vh, 34rem);
 	overflow: auto;
-	padding: 0.85rem;
+	padding: 1rem;
 	text-align: left;
 	scrollbar-width: thin;
 	scrollbar-color: rgb(121 165 245 / 68%) transparent;
@@ -433,7 +434,7 @@ h1 {
 .signal-card {
 	margin: 0;
 	padding: 0.7rem;
-	border: 1px solid rgb(123 163 255 / 20%);
+	border: 0;
 	border-radius: 0.75rem;
 	background: rgb(7 13 29 / 60%);
 }
@@ -455,7 +456,7 @@ h1 {
 .prophecy-card {
 	margin-top: 1rem;
 	padding: 0.95rem;
-	border: 1px solid rgb(123 163 255 / 24%);
+	border: 0;
 	border-radius: 0.85rem;
 	background: rgb(7 13 29 / 62%);
 }
