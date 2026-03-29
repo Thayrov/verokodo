@@ -1,5 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Fira+Code&family=IBM+Plex+Mono&display=swap");
 
 :root {
 	color-scheme: dark;
@@ -19,7 +18,7 @@
 body {
 	margin: 0;
 	min-height: 100vh;
-	font-family: "Space Grotesk", "Segoe UI", sans-serif;
+	font-family: "Fira Code", system-ui;
 	color: var(--text);
 	background: #02030b;
 	line-height: 1.45;
@@ -108,7 +107,7 @@ body {
 	margin: 0;
 	font-size: clamp(2rem, 5vw, 3rem);
 	letter-spacing: 0.01em;
-	font-family: Cinzel, 'Times New Roman', Times, serif;
+	font-family: Cinzel, serif;
 }
 
 .orb-stage {
