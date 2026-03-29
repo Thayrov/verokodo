@@ -100,7 +100,18 @@ if (!(crystalCanvas instanceof HTMLElement) || !(experience instanceof HTMLEleme
 }
 
 const crystal = createCrystalBallScene(crystalCanvas)
-crystal.setZoomTarget(0.08)
+
+const crystalMoments = {
+  beforeSearch: { zoom: 0.08, activity: 0.45 },
+  loading: { zoom: 1.02, activity: 1.25 },
+  afterSearch: { zoom: 0.18, activity: 0.58 }
+}
+
+function applyCrystalMoment(moment, immediate = false) {
+  const target = crystalMoments[moment]
+  crystal.setZoomTarget(target.zoom, immediate)
+  crystal.setActivityTarget(target.activity, immediate)
+}
 
 let latestError = ''
 
@@ -129,9 +140,34 @@ if (resultFiveYearLabel) resultFiveYearLabel.textContent = copy.fiveYearLabel
 if (resultTenYearLabel) resultTenYearLabel.textContent = copy.tenYearLabel
 if (goBackButton) goBackButton.textContent = copy.goBack
 
-function setState(nextState) {
+function setState(nextState, options = {}) {
+  const immediate = options.immediate === true
   experience.dataset.state = nextState
+
+  if (nextState === 'idle') {
+    applyCrystalMoment('beforeSearch', immediate)
+    return
+  }
+
+  if (nextState === 'loading') {
+    applyCrystalMoment('loading', immediate)
+    return
+  }
+
+  if (nextState === 'result') {
+    applyCrystalMoment('afterSearch', immediate)
+    return
+  }
+
+  if (nextState === 'error') {
+    applyCrystalMoment('afterSearch', immediate)
+    return
+  }
+
+  applyCrystalMoment('beforeSearch', immediate)
 }
+
+setState('idle', { immediate: true })
 
 function escapeHtml(text) {
   return text
@@ -198,7 +234,6 @@ function showError(message) {
   latestError = message
   if (errorText) errorText.textContent = message
   setState('error')
-  crystal.setZoomTarget(0.38)
 }
 
 function resetToIdle() {
@@ -210,7 +245,6 @@ function resetToIdle() {
   if (signalGrid) signalGrid.innerHTML = ''
   if (loadingStatus) loadingStatus.textContent = copy.loadingStatusA
   setState('idle')
-  crystal.setZoomTarget(0.08)
   if (usernameInput instanceof HTMLInputElement) {
     usernameInput.focus()
   }
@@ -228,7 +262,6 @@ oracleForm?.addEventListener('submit', async (event) => {
   }
 
   setState('loading')
-  crystal.setZoomTarget(1.02)
   if (loadingStatus) loadingStatus.textContent = copy.loadingStatusA
 
   setTimeout(() => {
@@ -266,7 +299,6 @@ oracleForm?.addEventListener('submit', async (event) => {
     mountSignal(copy.recentRepos, reading.signals.recentRepoNames.join(', ') || copy.unknown)
 
     setTimeout(() => {
-      crystal.setZoomTarget(0.18)
       setState('result')
     }, 380)
   } catch (error) {
@@ -288,7 +320,6 @@ copyErrorButton?.addEventListener('click', async () => {
 
 retryReadingButton?.addEventListener('click', () => {
   setState('idle')
-  crystal.setZoomTarget(0.08)
 })
 
 goBackButton?.addEventListener('click', () => {
