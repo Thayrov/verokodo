@@ -5,7 +5,9 @@
  * Decisions: caller provides parsing strategy so this module stays transport-focused.
  */
 
-async function readApiError(response, requestFailed) {
+import type { OracleLocale, OracleReading, ParseReading, RequestFailed } from './types'
+
+async function readApiError(response: Response, requestFailed: RequestFailed): Promise<string> {
   const fallback = requestFailed(response.status)
 
   try {
@@ -26,7 +28,14 @@ export async function requestReading({
   signal,
   requestFailed,
   parseReading
-}) {
+}: {
+  apiBaseUrl: string
+  locale: OracleLocale
+  username: string
+  signal: AbortSignal
+  requestFailed: RequestFailed
+  parseReading: ParseReading
+}): Promise<OracleReading> {
   const response = await fetch(`${apiBaseUrl}/oracle`, {
     method: 'POST',
     headers: {

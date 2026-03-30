@@ -5,7 +5,9 @@
  * Decisions: shortcut hint uses explicit DOM nodes to avoid untrusted HTML insertion.
  */
 
-export function applyLocalizedCopy({ copy, elements }) {
+import type { OracleCopy, OracleElements } from './types'
+
+export function applyLocalizedCopy({ copy, elements }: { copy: OracleCopy; elements: OracleElements }): void {
   if (elements.homeTitle instanceof HTMLElement) elements.homeTitle.textContent = copy.title
   if (elements.usernameLabel instanceof HTMLElement) elements.usernameLabel.textContent = copy.usernameLabel
 

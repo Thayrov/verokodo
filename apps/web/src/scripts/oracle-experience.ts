@@ -6,12 +6,13 @@ import { createRecentUsernamesStore } from './oracle-experience/recent-usernames
 import { copyText, renderParagraphs, setTransientButtonText } from './oracle-experience/text-utils'
 import { createOracleUiState } from './oracle-experience/ui-state'
 import { parseReading, validateUsername } from './oracle-experience/validation'
+import type { OracleElements } from './oracle-experience/types'
 
 const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL ?? 'http://localhost:3000'
 const { locale, copy } = resolveLocaleCopy()
 document.documentElement.lang = locale
 
-const elements = {
+const candidateElements = {
   crystalCanvas: document.getElementById('crystal-canvas'),
   experience: document.getElementById('oracle-experience'),
   announceNode: document.getElementById('screen-announce'),
@@ -50,12 +51,20 @@ const elements = {
 }
 
 if (
-  !(elements.crystalCanvas instanceof HTMLElement) ||
-  !(elements.experience instanceof HTMLElement) ||
-  !(elements.oracleForm instanceof HTMLFormElement) ||
-  !(elements.usernameInput instanceof HTMLInputElement)
+  !(candidateElements.crystalCanvas instanceof HTMLElement) ||
+  !(candidateElements.experience instanceof HTMLElement) ||
+  !(candidateElements.oracleForm instanceof HTMLFormElement) ||
+  !(candidateElements.usernameInput instanceof HTMLInputElement)
 ) {
   throw new Error('Oracle experience mount failed.')
+}
+
+const elements: OracleElements = {
+  ...candidateElements,
+  crystalCanvas: candidateElements.crystalCanvas,
+  experience: candidateElements.experience,
+  oracleForm: candidateElements.oracleForm,
+  usernameInput: candidateElements.usernameInput
 }
 
 const crystal = createCrystalBallScene(elements.crystalCanvas)
@@ -69,9 +78,9 @@ const uiState = createOracleUiState({
   renderParagraphs
 })
 
-let activeRequestController = null
+let activeRequestController: AbortController | null = null
 
-function buildShareLink(username) {
+function buildShareLink(username: string): string {
   const url = new URL(window.location.href)
   url.searchParams.set('username', username)
   return url.toString()

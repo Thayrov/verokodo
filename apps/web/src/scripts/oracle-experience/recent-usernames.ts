@@ -5,11 +5,17 @@
  * Decisions: fail soft on storage errors to keep interaction flow uninterrupted.
  */
 
+import type { RecentUsernamesStore, ValidateUsername } from './types'
+
 const storageKey = 'verokodo.recent-usernames.v1'
 const maxRecentUsernames = 6
 
-export function createRecentUsernamesStore({ validateUsername }) {
-  function read() {
+export function createRecentUsernamesStore({
+  validateUsername
+}: {
+  validateUsername: ValidateUsername
+}): RecentUsernamesStore {
+  function read(): string[] {
     try {
       const serialized = window.localStorage.getItem(storageKey)
       if (!serialized) return []
@@ -25,7 +31,7 @@ export function createRecentUsernamesStore({ validateUsername }) {
     }
   }
 
-  function write(nextUsernames) {
+  function write(nextUsernames: string[]): void {
     try {
       window.localStorage.setItem(storageKey, JSON.stringify(nextUsernames))
     } catch {

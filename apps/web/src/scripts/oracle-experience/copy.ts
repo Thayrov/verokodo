@@ -5,7 +5,9 @@
  * Decisions: keep copy close to runtime code to avoid hydration-time i18n tooling overhead.
  */
 
-const messages = {
+import type { OracleCopy, OracleLocale } from './types'
+
+const messages: Record<OracleLocale, OracleCopy> = {
   en: {
     title: 'Verokodo',
     usernameLabel: 'GitHub Username',
@@ -106,12 +108,12 @@ const messages = {
   }
 }
 
-function detectLocale() {
+function detectLocale(): OracleLocale {
   const browserLocales = [
     ...(navigator.languages ?? []),
     navigator.language,
     Intl.DateTimeFormat().resolvedOptions().locale
-  ].filter(Boolean)
+  ].filter((locale): locale is string => Boolean(locale))
 
   return browserLocales.some((locale) => locale.toLowerCase().startsWith('es')) ? 'es' : 'en'
 }

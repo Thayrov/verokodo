@@ -5,6 +5,18 @@
  * Decisions: keep mutable UI state in one module to reduce cognitive load in event wiring code.
  */
 
+import type {
+  CrystalController,
+  OracleCopy,
+  OracleElements,
+  OracleReading,
+  OracleState,
+  OracleUiState,
+  RecentUsernamesStore,
+  RenderParagraphs,
+  ValidateUsername
+} from './types'
+
 export function createOracleUiState({
   elements,
   copy,
@@ -12,7 +24,14 @@ export function createOracleUiState({
   validateUsername,
   recentUsernamesStore,
   renderParagraphs
-}) {
+}: {
+  elements: OracleElements
+  copy: OracleCopy
+  crystal: CrystalController
+  validateUsername: ValidateUsername
+  recentUsernamesStore: RecentUsernamesStore
+  renderParagraphs: RenderParagraphs
+}): OracleUiState {
   const crystalMoments = {
     beforeSearch: { zoom: 0.08, activity: 0.45 },
     loading: { zoom: 1.18, activity: 1.05 },
@@ -21,13 +40,13 @@ export function createOracleUiState({
 
   let recentUsernames = []
   let latestError = ''
-  let latestReading = null
+  let latestReading: OracleReading | null = null
   let loadingElapsedInterval = 0
   let loadingTimeoutA = 0
   let loadingTimeoutB = 0
   let loadingStartedAt = 0
 
-  function announce(message) {
+  function announce(message: string): void {
     if (!(elements.announceNode instanceof HTMLElement)) return
     elements.announceNode.textContent = ''
     window.requestAnimationFrame(() => {
@@ -35,7 +54,7 @@ export function createOracleUiState({
     })
   }
 
-  function updateLoadingProgress(progress) {
+  function updateLoadingProgress(progress: number): void {
     if (!(elements.loadingProgressBar instanceof HTMLElement)) return
     const clamped = Math.max(0, Math.min(1, progress))
     elements.loadingProgressBar.style.setProperty('--loading-progress', String(clamped))
@@ -58,17 +77,18 @@ export function createOracleUiState({
     }
   }
 
-  function setState(nextState, { immediate = false } = {}) {
+  function setState(nextState: OracleState, { immediate = false }: { immediate?: boolean } = {}): void {
     elements.experience.dataset.state = nextState
     elements.experience.setAttribute('aria-busy', nextState === 'loading' ? 'true' : 'false')
 
-    const moment = nextState === 'idle' ? 'beforeSearch' : nextState === 'loading' ? 'loading' : 'afterSearch'
+    const moment: keyof typeof crystalMoments =
+      nextState === 'idle' ? 'beforeSearch' : nextState === 'loading' ? 'loading' : 'afterSearch'
     crystal.setZoomTarget(crystalMoments[moment].zoom, immediate)
     crystal.setActivityTarget(crystalMoments[moment].activity, immediate)
     updateInputInteractivity()
   }
 
-  function stopLoadingTimers() {
+  function stopLoadingTimers(): void {
     if (loadingElapsedInterval) {
       window.clearInterval(loadingElapsedInterval)
       loadingElapsedInterval = 0
@@ -85,7 +105,7 @@ export function createOracleUiState({
     }
   }
 
-  function startLoadingTimers() {
+  function startLoadingTimers(): void {
     stopLoadingTimers()
     loadingStartedAt = performance.now()
 
@@ -119,7 +139,7 @@ export function createOracleUiState({
     }, 1800)
   }
 
-  function hydrateRecentUsernames() {
+  function hydrateRecentUsernames(): void {
     if (!(elements.recentUsernamesDatalist instanceof HTMLDataListElement)) return
     elements.recentUsernamesDatalist.innerHTML = ''
 
@@ -135,7 +155,7 @@ export function createOracleUiState({
     }
   }
 
-  function updateUsernameHint() {
+  function updateUsernameHint(): void {
     if (!(elements.usernameHint instanceof HTMLElement)) return
 
     const username = elements.usernameInput.value.trim()
@@ -158,7 +178,7 @@ export function createOracleUiState({
     elements.usernameInput.setAttribute('aria-invalid', 'true')
   }
 
-  function mountSignal(label, value) {
+  function mountSignal(label: string, value: string): void {
     if (!(elements.signalGrid instanceof HTMLElement)) return
     const card = document.createElement('article')
     card.className = 'signal-card'
@@ -175,7 +195,7 @@ export function createOracleUiState({
     elements.signalGrid.append(card)
   }
 
-  function clearResultContent() {
+  function clearResultContent(): void {
     latestError = ''
     latestReading = null
     if (elements.errorText instanceof HTMLElement) elements.errorText.textContent = ''
@@ -187,7 +207,7 @@ export function createOracleUiState({
     if (elements.resultMeta instanceof HTMLElement) elements.resultMeta.textContent = ''
   }
 
-  function applyPrefilledUsername() {
+  function applyPrefilledUsername(): void {
     const username = new URLSearchParams(window.location.search).get('username')?.trim() ?? ''
     if (validateUsername(username)) {
       elements.usernameInput.value = username
@@ -213,7 +233,7 @@ export function createOracleUiState({
       announce(copy.announceLoading)
       startLoadingTimers()
     },
-    completeReading(reading) {
+    completeReading(reading: OracleReading) {
       stopLoadingTimers()
       updateLoadingProgress(1)
 
@@ -246,7 +266,7 @@ export function createOracleUiState({
         announce(copy.announceResult)
       }, 120)
     },
-    failWithError(message) {
+    failWithError(message: string) {
       latestError = message
       if (elements.errorText instanceof HTMLElement) {
         elements.errorText.textContent = message
@@ -275,7 +295,7 @@ export function createOracleUiState({
       hydrateRecentUsernames()
       announce(copy.recentCleared)
     },
-    setResultNotice(message) {
+    setResultNotice(message: string) {
       if (elements.experience.dataset.state !== 'result' || !(elements.resultMeta instanceof HTMLElement)) {
         return false
       }

@@ -5,7 +5,7 @@
  * Decisions: includes legacy clipboard fallback for browsers without navigator.clipboard.
  */
 
-function escapeHtml(text) {
+function escapeHtml(text: string): string {
   return text
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
@@ -14,7 +14,7 @@ function escapeHtml(text) {
     .replaceAll("'", '&#039;')
 }
 
-export function renderParagraphs(text) {
+export function renderParagraphs(text: string): string {
   return text
     .split(/\n+/)
     .map((line) => line.trim())
@@ -23,7 +23,7 @@ export function renderParagraphs(text) {
     .join('')
 }
 
-export async function copyText(value, clipboardFailed) {
+export async function copyText(value: string, clipboardFailed: string): Promise<void> {
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(value)
     return
@@ -44,7 +44,11 @@ export async function copyText(value, clipboardFailed) {
   }
 }
 
-export function setTransientButtonText(button, nextLabel, restoreLabel) {
+export function setTransientButtonText(
+  button: HTMLButtonElement,
+  nextLabel: string,
+  restoreLabel: string
+): void {
   button.textContent = nextLabel
   window.setTimeout(() => {
     button.textContent = restoreLabel
