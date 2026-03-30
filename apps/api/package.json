@@ -8,6 +8,7 @@
     "@verokodo/shared": "workspace:*",
     "ai": "^5.0.100",
     "hono": "^4.12.9",
+    "hono-rate-limiter": "^0.5.3",
     "zod": "^3.25.67"
   },
   "devDependencies": {

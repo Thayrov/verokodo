@@ -21,3 +21,6 @@ Hono API service for profile ingestion and oracle generation.
 ### Optional env
 
 - `VEROKODO_MODEL` (default: `gemini-3.1-flash-lite-preview`)
+- `API_CORS_ALLOW_ORIGINS` (default: `*`; comma-separated list for explicit origins)
+- `API_RATE_LIMIT_WINDOW_MS` (default: `900000`)
+- `API_RATE_LIMIT_MAX` (default: `100`)

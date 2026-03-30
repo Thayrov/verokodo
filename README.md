@@ -46,6 +46,9 @@ Environment variables:
 - `GOOGLE_GENERATIVE_AI_API_KEY` (required)
 - `VEROKODO_MODEL` (optional)
 - `PUBLIC_API_BASE_URL` (optional, default `http://localhost:3000`)
+- `API_CORS_ALLOW_ORIGINS` (optional, default `*`)
+- `API_RATE_LIMIT_WINDOW_MS` (optional, default `900000`)
+- `API_RATE_LIMIT_MAX` (optional, default `100`)
 
 ## Hackathon Compliance Checklist
 

@@ -21,3 +21,6 @@ Servicio API en Hono para ingesta de perfiles y generación del oráculo.
 ### Variables opcionales
 
 - `VEROKODO_MODEL` (por defecto: `gemini-3.1-flash-lite-preview`)
+- `API_CORS_ALLOW_ORIGINS` (por defecto: `*`; lista separada por comas para origenes explicitos)
+- `API_RATE_LIMIT_WINDOW_MS` (por defecto: `900000`)
+- `API_RATE_LIMIT_MAX` (por defecto: `100`)
