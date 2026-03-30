@@ -16,6 +16,9 @@ import type {
   RenderParagraphs,
   ValidateUsername
 } from './types'
+import { createLoadingFeedback } from './state/loading-feedback'
+import { createRecentUsernamesUi } from './state/recent-usernames-ui'
+import { createResultRenderer } from './state/result-renderer'
 
 export function createOracleUiState({
   elements,
@@ -38,13 +41,32 @@ export function createOracleUiState({
     afterSearch: { zoom: 0.18, activity: 0.58 }
   }
 
-  let recentUsernames = []
+  let recentUsernames: string[] = []
   let latestError = ''
   let latestReading: OracleReading | null = null
-  let loadingElapsedInterval = 0
-  let loadingTimeoutA = 0
-  let loadingTimeoutB = 0
-  let loadingStartedAt = 0
+
+  const loadingFeedback = createLoadingFeedback({
+    elements,
+    copy,
+    isLoading: () => elements.experience.dataset.state === 'loading'
+  })
+
+  const recentUsernamesUi = createRecentUsernamesUi({
+    elements,
+    onSelectUsername: (username) => {
+      elements.usernameInput.value = username
+      updateUsernameHint()
+      updateInputInteractivity()
+      elements.usernameInput.focus()
+      elements.usernameInput.select()
+    }
+  })
+
+  const resultRenderer = createResultRenderer({
+    elements,
+    copy,
+    renderParagraphs
+  })
 
   function announce(message: string): void {
     if (!(elements.announceNode instanceof HTMLElement)) return
@@ -52,12 +74,6 @@ export function createOracleUiState({
     window.requestAnimationFrame(() => {
       elements.announceNode.textContent = message
     })
-  }
-
-  function updateLoadingProgress(progress: number): void {
-    if (!(elements.loadingProgressBar instanceof HTMLElement)) return
-    const clamped = Math.max(0, Math.min(1, progress))
-    elements.loadingProgressBar.style.setProperty('--loading-progress', String(clamped))
   }
 
   function updateInputInteractivity() {
@@ -88,73 +104,6 @@ export function createOracleUiState({
     updateInputInteractivity()
   }
 
-  function stopLoadingTimers(): void {
-    if (loadingElapsedInterval) {
-      window.clearInterval(loadingElapsedInterval)
-      loadingElapsedInterval = 0
-    }
-
-    if (loadingTimeoutA) {
-      window.clearTimeout(loadingTimeoutA)
-      loadingTimeoutA = 0
-    }
-
-    if (loadingTimeoutB) {
-      window.clearTimeout(loadingTimeoutB)
-      loadingTimeoutB = 0
-    }
-  }
-
-  function startLoadingTimers(): void {
-    stopLoadingTimers()
-    loadingStartedAt = performance.now()
-
-    const refresh = () => {
-      if (!(elements.loadingMeta instanceof HTMLElement)) return
-
-      const elapsedSeconds = (performance.now() - loadingStartedAt) / 1000
-      const elapsedRatio = Math.min(0.98, elapsedSeconds / 7.5)
-      updateLoadingProgress(0.1 + elapsedRatio * 0.88)
-
-      let step = 1
-      if (elapsedSeconds >= 1.8) step = 3
-      else if (elapsedSeconds >= 0.9) step = 2
-
-      elements.loadingMeta.textContent = copy.loadingMeta(step, 3, elapsedSeconds)
-    }
-
-    refresh()
-    loadingElapsedInterval = window.setInterval(refresh, 120)
-
-    loadingTimeoutA = window.setTimeout(() => {
-      if (elements.experience.dataset.state !== 'loading' || !(elements.loadingStatus instanceof HTMLElement)) return
-      elements.loadingStatus.textContent = copy.loadingStatusB
-      updateLoadingProgress(0.42)
-    }, 900)
-
-    loadingTimeoutB = window.setTimeout(() => {
-      if (elements.experience.dataset.state !== 'loading' || !(elements.loadingStatus instanceof HTMLElement)) return
-      elements.loadingStatus.textContent = copy.loadingStatusC
-      updateLoadingProgress(0.77)
-    }, 1800)
-  }
-
-  function hydrateRecentUsernames(): void {
-    if (!(elements.recentUsernamesDatalist instanceof HTMLDataListElement)) return
-    elements.recentUsernamesDatalist.innerHTML = ''
-
-    for (const username of recentUsernames) {
-      const option = document.createElement('option')
-      option.value = username
-      elements.recentUsernamesDatalist.append(option)
-    }
-
-    if (elements.clearRecentButton instanceof HTMLButtonElement) {
-      elements.clearRecentButton.hidden = recentUsernames.length === 0
-      elements.clearRecentButton.disabled = recentUsernames.length === 0
-    }
-  }
-
   function updateUsernameHint(): void {
     if (!(elements.usernameHint instanceof HTMLElement)) return
 
@@ -178,35 +127,6 @@ export function createOracleUiState({
     elements.usernameInput.setAttribute('aria-invalid', 'true')
   }
 
-  function mountSignal(label: string, value: string): void {
-    if (!(elements.signalGrid instanceof HTMLElement)) return
-    const card = document.createElement('article')
-    card.className = 'signal-card'
-
-    const labelNode = document.createElement('p')
-    labelNode.className = 'signal-label'
-    labelNode.textContent = label
-
-    const valueNode = document.createElement('p')
-    valueNode.className = 'signal-value'
-    valueNode.textContent = value
-
-    card.append(labelNode, valueNode)
-    elements.signalGrid.append(card)
-  }
-
-  function clearResultContent(): void {
-    latestError = ''
-    latestReading = null
-    if (elements.errorText instanceof HTMLElement) elements.errorText.textContent = ''
-    if (elements.resultSummary instanceof HTMLElement) elements.resultSummary.textContent = ''
-    if (elements.resultProphecy instanceof HTMLElement) elements.resultProphecy.innerHTML = ''
-    if (elements.resultFiveYear instanceof HTMLElement) elements.resultFiveYear.textContent = ''
-    if (elements.resultTenYear instanceof HTMLElement) elements.resultTenYear.textContent = ''
-    if (elements.signalGrid instanceof HTMLElement) elements.signalGrid.innerHTML = ''
-    if (elements.resultMeta instanceof HTMLElement) elements.resultMeta.textContent = ''
-  }
-
   function applyPrefilledUsername(): void {
     const username = new URLSearchParams(window.location.search).get('username')?.trim() ?? ''
     if (validateUsername(username)) {
@@ -217,10 +137,10 @@ export function createOracleUiState({
   return {
     initialize() {
       recentUsernames = recentUsernamesStore.read()
-      hydrateRecentUsernames()
+      recentUsernamesUi.render(recentUsernames)
       applyPrefilledUsername()
       setState('idle', { immediate: true })
-      updateLoadingProgress(0)
+      loadingFeedback.reset()
       updateUsernameHint()
       updateInputInteractivity()
     },
@@ -231,32 +151,14 @@ export function createOracleUiState({
     startLoading() {
       setState('loading')
       announce(copy.announceLoading)
-      startLoadingTimers()
+      loadingFeedback.start()
     },
     completeReading(reading: OracleReading) {
-      stopLoadingTimers()
-      updateLoadingProgress(1)
-
-      const elapsedSeconds = (performance.now() - loadingStartedAt) / 1000
+      const elapsedSeconds = loadingFeedback.completeAndGetElapsedSeconds()
       latestReading = reading
       recentUsernames = recentUsernamesStore.remember(recentUsernames, reading.username)
-      hydrateRecentUsernames()
-
-      if (elements.resultTitle instanceof HTMLElement) {
-        elements.resultTitle.textContent = `${copy.resultTitlePrefix} @${reading.username}`
-      }
-
-      if (elements.resultSummary instanceof HTMLElement) elements.resultSummary.textContent = reading.summary
-      if (elements.resultProphecy instanceof HTMLElement) elements.resultProphecy.innerHTML = renderParagraphs(reading.prophecy)
-      if (elements.resultFiveYear instanceof HTMLElement) elements.resultFiveYear.textContent = reading.fiveYearOutlook
-      if (elements.resultTenYear instanceof HTMLElement) elements.resultTenYear.textContent = reading.tenYearOutlook
-      if (elements.resultMeta instanceof HTMLElement) elements.resultMeta.textContent = copy.resultMeta(elapsedSeconds)
-      if (elements.signalGrid instanceof HTMLElement) elements.signalGrid.innerHTML = ''
-
-      mountSignal(copy.followers, String(reading.signals.followers))
-      mountSignal(copy.publicRepos, String(reading.signals.publicRepos))
-      mountSignal(copy.topLanguages, reading.signals.topLanguages.join(', ') || copy.unknown)
-      mountSignal(copy.recentRepos, reading.signals.recentRepoNames.join(', ') || copy.unknown)
+      recentUsernamesUi.render(recentUsernames)
+      resultRenderer.render(reading, elapsedSeconds)
 
       const historyUrl = new URL(window.location.href)
       historyUrl.searchParams.set('username', reading.username)
@@ -268,18 +170,15 @@ export function createOracleUiState({
     },
     failWithError(message: string) {
       latestError = message
-      if (elements.errorText instanceof HTMLElement) {
-        elements.errorText.textContent = message
-      }
+      resultRenderer.setError(message)
       setState('error')
       announce(copy.announceError)
     },
     resetToIdle({ preserveInput = false, announcement = copy.announceIdle } = {}) {
-      stopLoadingTimers()
-      updateLoadingProgress(0)
-      if (elements.loadingStatus instanceof HTMLElement) elements.loadingStatus.textContent = copy.loadingStatusA
-      if (elements.loadingMeta instanceof HTMLElement) elements.loadingMeta.textContent = copy.loadingMeta(1, 3, 0)
-      clearResultContent()
+      loadingFeedback.reset()
+      latestError = ''
+      latestReading = null
+      resultRenderer.clear()
       setState('idle')
       announce(announcement)
 
@@ -292,15 +191,11 @@ export function createOracleUiState({
     },
     clearRecent() {
       recentUsernames = recentUsernamesStore.clear()
-      hydrateRecentUsernames()
+      recentUsernamesUi.render(recentUsernames)
       announce(copy.recentCleared)
     },
     setResultNotice(message: string) {
-      if (elements.experience.dataset.state !== 'result' || !(elements.resultMeta instanceof HTMLElement)) {
-        return false
-      }
-
-      elements.resultMeta.textContent = message
+      if (!resultRenderer.setNotice(message)) return false
       announce(message)
       return true
     },
@@ -311,7 +206,7 @@ export function createOracleUiState({
       return latestReading
     },
     destroy() {
-      stopLoadingTimers()
+      loadingFeedback.stop()
       crystal.destroy()
     }
   }

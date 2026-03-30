@@ -19,6 +19,7 @@ export type OracleCopy = {
   shortcutHintPrefix: string
   shortcutHintSuffix: string
   clearRecent: string
+  recentUsernamesTitle: string
   recentCleared: string
   loadingLabel: string
   loadingStatusA: string
@@ -95,6 +96,9 @@ export type OracleElements = {
   usernameHint: HTMLElement | null
   usernameShortcut: HTMLElement | null
   recentUsernamesDatalist: HTMLElement | null
+  recentUsernamesPanel: HTMLElement | null
+  recentUsernamesTitle: HTMLElement | null
+  recentUsernamesList: HTMLElement | null
   clearRecentButton: HTMLElement | null
   startButton: HTMLElement | null
   homeTitle: HTMLElement | null

@@ -33,6 +33,10 @@ export function applyLocalizedCopy({ copy, elements }: { copy: OracleCopy; eleme
     elements.clearRecentButton.textContent = copy.clearRecent
   }
 
+  if (elements.recentUsernamesTitle instanceof HTMLElement) {
+    elements.recentUsernamesTitle.textContent = copy.recentUsernamesTitle
+  }
+
   if (elements.loadingLabel instanceof HTMLElement) elements.loadingLabel.textContent = copy.loadingLabel
   if (elements.loadingStatus instanceof HTMLElement) elements.loadingStatus.textContent = copy.loadingStatusA
   if (elements.loadingMeta instanceof HTMLElement) elements.loadingMeta.textContent = copy.loadingMeta(1, 3, 0)

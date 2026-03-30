@@ -182,3 +182,39 @@
 	color: var(--text);
 	border-color: rgb(173 218 255 / 66%);
 }
+
+.recent-usernames-panel {
+	display: grid;
+	gap: 0.45rem;
+}
+
+.recent-usernames-title {
+	margin: 0;
+	font-size: 0.74rem;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+
+.recent-usernames-list {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+
+.recent-username-chip {
+	appearance: none;
+	border: 1px solid rgb(142 187 255 / 34%);
+	border-radius: 999px;
+	background: rgb(7 16 36 / 72%);
+	color: var(--muted);
+	padding: 0.24rem 0.56rem;
+	font-size: 0.74rem;
+	font-family: "IBM Plex Mono", monospace;
+	cursor: pointer;
+	transition: border-color var(--motion-fast) ease, color var(--motion-fast) ease;
+}
+
+.recent-username-chip:hover {
+	border-color: rgb(173 218 255 / 66%);
+	color: var(--text);
+}

@@ -185,7 +185,7 @@
 #oracle-experience[data-state="idle"] .form-meta,
 #oracle-experience[data-state="idle"] #home-note {
 	opacity: 1;
-	max-height: 12rem;
+	max-height: 16rem;
 	transform: translateY(0);
 	pointer-events: auto;
 }
