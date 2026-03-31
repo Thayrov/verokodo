@@ -61,16 +61,11 @@ export function applyLocalizedCopy({ copy, elements }: { copy: OracleCopy; eleme
     elements.goBackButton.textContent = copy.goBack
   }
 
-  if (elements.copyShareButton instanceof HTMLButtonElement) {
-    elements.copyShareButton.textContent = copy.copyShareButton
+  if (elements.shareImageButton instanceof HTMLButtonElement) {
+    elements.shareImageButton.textContent = copy.shareImageButton
   }
 
-  if (elements.copyLinkButton instanceof HTMLButtonElement) {
-    elements.copyLinkButton.textContent = copy.copyLinkButton
-  }
-
-  if (elements.shareReadingButton instanceof HTMLButtonElement) {
-    elements.shareReadingButton.textContent = copy.shareButton
-    elements.shareReadingButton.disabled = typeof navigator.share !== 'function'
+  if (elements.shareXButton instanceof HTMLButtonElement) {
+    elements.shareXButton.textContent = copy.shareXButton
   }
 }

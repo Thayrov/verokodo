@@ -1,4 +1,5 @@
 import { createCrystalBallScene } from './crystal-ball-scene'
+import { toBlob } from 'html-to-image'
 import { resolveLocaleCopy } from './oracle-experience/copy'
 import { applyLocalizedCopy } from './oracle-experience/localized-ui'
 import { requestReading } from './oracle-experience/network'
@@ -46,10 +47,10 @@ const candidateElements = {
   resultFiveYearLabel: document.getElementById('result-five-year-label'),
   resultTenYearLabel: document.getElementById('result-ten-year-label'),
   signalGrid: document.getElementById('signal-grid'),
+  resultCapture: document.querySelector('#result-panel .result-scroll'),
   goBackButton: document.getElementById('go-back'),
-  copyShareButton: document.getElementById('copy-share'),
-  copyLinkButton: document.getElementById('copy-link'),
-  shareReadingButton: document.getElementById('share-reading'),
+  shareImageButton: document.getElementById('share-image'),
+  shareXButton: document.getElementById('share-x'),
   resultMeta: document.getElementById('result-meta')
 }
 
@@ -84,9 +85,64 @@ const uiState = createOracleUiState({
 let activeRequestController: AbortController | null = null
 
 function buildShareLink(username: string): string {
-  const url = new URL(window.location.href)
+  const url = new URL('/', window.location.origin)
   url.searchParams.set('username', username)
   return url.toString()
+}
+
+function buildXShareLink({ shareUrl, shareText }: { shareUrl: string; shareText: string }): string {
+  const xIntentUrl = new URL('https://twitter.com/intent/tweet')
+  xIntentUrl.searchParams.set('url', shareUrl)
+  xIntentUrl.searchParams.set('text', shareText)
+  return xIntentUrl.toString()
+}
+
+function openShareWindow(url: string): boolean {
+  const popupWindow = window.open(url, '_blank', 'noopener,noreferrer')
+  if (!popupWindow) return false
+
+  popupWindow.opener = null
+  return true
+}
+
+async function captureReadingImage(captureNode: HTMLElement): Promise<Blob> {
+  captureNode.classList.add('capture-export-mode')
+  const captureWidth = Math.max(1, Math.round(captureNode.scrollWidth))
+  const captureHeight = Math.max(1, Math.round(captureNode.scrollHeight))
+
+  try {
+    const blob = await toBlob(captureNode, {
+      cacheBust: true,
+      pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+      width: captureWidth,
+      height: captureHeight,
+      style: {
+        width: `${captureWidth}px`,
+        height: `${captureHeight}px`,
+        backgroundColor: 'rgb(6 10 25)',
+        maxHeight: 'none',
+        overflow: 'visible'
+      }
+    })
+
+    if (blob) return blob
+  } finally {
+    captureNode.classList.remove('capture-export-mode')
+  }
+
+  throw new Error(copy.shareImageFailed)
+}
+
+function resolveShareContext() {
+  const latestReading = uiState.getLatestReading()
+  const username = latestReading?.username ?? elements.usernameInput.value.trim()
+  if (!validateUsername(username)) return null
+
+  return {
+    username,
+    shareUrl: buildShareLink(username),
+    shareText: latestReading?.shareText ?? `${copy.resultTitlePrefix} @${username}`
+  }
 }
 
 applyLocalizedCopy({ copy, elements })
@@ -166,58 +222,72 @@ elements.goBackButton?.addEventListener('click', () => {
   uiState.resetToIdle({ preserveInput: true })
 })
 
-elements.copyShareButton?.addEventListener('click', async () => {
-  const latestReading = uiState.getLatestReading()
-  if (!latestReading) return
+elements.shareImageButton?.addEventListener('click', async () => {
+  const shareContext = resolveShareContext()
+  if (!shareContext || !(elements.resultCapture instanceof HTMLElement)) return
 
-  try {
-    await copyText(latestReading.shareText, copy.clipboardFailed)
-    if (elements.copyShareButton instanceof HTMLButtonElement) {
-      setTransientButtonText(elements.copyShareButton, copy.copied, copy.copyShareButton)
-    }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : copy.clipboardFailed
-    if (!uiState.setResultNotice(message)) uiState.failWithError(message)
-  }
-})
+  const shareImageButton =
+    elements.shareImageButton instanceof HTMLButtonElement ? elements.shareImageButton : null
+  const previousLabel = shareImageButton?.textContent ?? copy.shareImageButton
 
-elements.copyLinkButton?.addEventListener('click', async () => {
-  const latestReading = uiState.getLatestReading()
-  const username = latestReading?.username ?? elements.usernameInput.value.trim()
-  if (!validateUsername(username)) return
-
-  try {
-    await copyText(buildShareLink(username), copy.clipboardFailed)
-    if (elements.copyLinkButton instanceof HTMLButtonElement) {
-      setTransientButtonText(elements.copyLinkButton, copy.copied, copy.copyLinkButton)
-    }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : copy.clipboardFailed
-    if (!uiState.setResultNotice(message)) uiState.failWithError(message)
-  }
-})
-
-elements.shareReadingButton?.addEventListener('click', async () => {
-  if (typeof navigator.share !== 'function') {
-    if (!uiState.setResultNotice(copy.shareUnavailable)) {
-      uiState.failWithError(copy.shareUnavailable)
-    }
-    return
+  if (shareImageButton) {
+    shareImageButton.disabled = true
+    shareImageButton.textContent = copy.shareImageProcessing
   }
 
-  const latestReading = uiState.getLatestReading()
-  const username = latestReading?.username ?? elements.usernameInput.value.trim()
-  if (!validateUsername(username)) return
-
   try {
-    await navigator.share({
-      title: copy.shareTitle,
-      text: latestReading?.shareText ?? `${copy.resultTitlePrefix} @${username}`,
-      url: buildShareLink(username)
+    const imageBlob = await captureReadingImage(elements.resultCapture)
+    const imageFile = new File([imageBlob], `verokodo-${shareContext.username}-reading.png`, {
+      type: 'image/png'
     })
-  } catch {
-    return
+
+    if (
+      typeof navigator.share === 'function' &&
+      typeof navigator.canShare === 'function' &&
+      navigator.canShare({ files: [imageFile] })
+    ) {
+      await navigator.share({
+        files: [imageFile]
+      })
+      return
+    }
+
+    const imageDownloadUrl = URL.createObjectURL(imageBlob)
+    const downloadLink = document.createElement('a')
+    downloadLink.href = imageDownloadUrl
+    downloadLink.download = imageFile.name
+    downloadLink.click()
+    window.setTimeout(() => URL.revokeObjectURL(imageDownloadUrl), 0)
+
+    if (!uiState.setResultNotice(copy.shareImageDownloaded)) {
+      uiState.failWithError(copy.shareImageDownloaded)
+    }
+  } catch (error) {
+    if (error instanceof DOMException && (error.name === 'AbortError' || error.name === 'NotAllowedError')) {
+      return
+    }
+
+    const message = error instanceof Error ? error.message : copy.shareImageFailed
+    if (!uiState.setResultNotice(message)) uiState.failWithError(message)
+  } finally {
+    if (shareImageButton) {
+      shareImageButton.disabled = false
+      shareImageButton.textContent = previousLabel
+    }
   }
+})
+
+elements.shareXButton?.addEventListener('click', () => {
+  const shareContext = resolveShareContext()
+  if (!shareContext) return
+
+  const xShareLink = buildXShareLink({
+    shareUrl: shareContext.shareUrl,
+    shareText: shareContext.shareText
+  })
+
+  if (openShareWindow(xShareLink)) return
+  if (!uiState.setResultNotice(copy.sharePopupBlocked)) uiState.failWithError(copy.sharePopupBlocked)
 })
 
 window.addEventListener('online', () => {
@@ -229,7 +299,9 @@ window.addEventListener('offline', () => {
 })
 
 window.addEventListener('keydown', (event) => {
-  if (event.key !== '/') return
+  const isSlashKey = event.key === '/' || event.code === 'Slash' || event.code === 'NumpadDivide'
+  if (!isSlashKey) return
+  if (event.ctrlKey || event.metaKey || event.altKey) return
 
   const target = event.target
   const isEditableElement =
@@ -242,7 +314,7 @@ window.addEventListener('keydown', (event) => {
   event.preventDefault()
   elements.usernameInput.focus()
   elements.usernameInput.select()
-})
+}, { capture: true })
 
 window.addEventListener('beforeunload', () => {
   activeRequestController?.abort()

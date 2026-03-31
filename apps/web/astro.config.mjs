@@ -5,6 +5,9 @@ import { fileURLToPath } from 'node:url';
 // https://astro.build/config
 export default defineConfig({
   vite: {
-    envDir: fileURLToPath(new URL('../..', import.meta.url))
+    envDir: fileURLToPath(new URL('../..', import.meta.url)),
+    optimizeDeps: {
+      include: ['html-to-image']
+    }
   }
 });

@@ -133,14 +133,19 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
   let inViewport = true
   const clock = new THREE.Clock()
   const drawingBufferSize = new THREE.Vector2()
+  const visualViewport = window.visualViewport
 
   const resize = (): void => {
-    const width = container.clientWidth || window.innerWidth
-    const height = container.clientHeight || window.innerHeight
-    renderer.setSize(width, height, true)
+    const rect = container.getBoundingClientRect()
+    const width = Math.max(1, Math.round(rect.width || container.clientWidth || window.innerWidth))
+    const height = Math.max(1, Math.round(rect.height || container.clientHeight || window.innerHeight))
+    renderer.setSize(width, height, false)
     renderer.getDrawingBufferSize(drawingBufferSize)
     uniforms.uResolution.value.copy(drawingBufferSize)
   }
+
+  const resizeObserver =
+    typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => resize())
 
   const render = (): void => {
     if (destroyed) {
@@ -218,6 +223,8 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
 
   resize()
   window.addEventListener('resize', resize)
+  visualViewport?.addEventListener('resize', resize)
+  resizeObserver?.observe(container)
   document.addEventListener('visibilitychange', handleVisibilityChange)
   viewportObserver.observe(container)
   startRenderLoop()
@@ -239,6 +246,8 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
       destroyed = true
       stopRenderLoop()
       window.removeEventListener('resize', resize)
+      visualViewport?.removeEventListener('resize', resize)
+      resizeObserver?.disconnect()
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       viewportObserver.disconnect()
 

@@ -35,9 +35,9 @@ export type OracleCopy = {
   fiveYearLabel: string
   tenYearLabel: string
   goBack: string
-  copyShareButton: string
-  copyLinkButton: string
-  shareButton: string
+  shareImageButton: string
+  shareXButton: string
+  shareImageProcessing: string
   copied: string
   resultMeta: (elapsedSeconds: number) => string
   followers: string
@@ -51,7 +51,9 @@ export type OracleCopy = {
   unexpectedClientError: string
   offlineHint: string
   shareTitle: string
-  shareUnavailable: string
+  shareImageDownloaded: string
+  shareImageFailed: string
+  sharePopupBlocked: string
   announceLoading: string
   announceResult: string
   announceError: string
@@ -120,10 +122,10 @@ export type OracleElements = {
   resultFiveYearLabel: HTMLElement | null
   resultTenYearLabel: HTMLElement | null
   signalGrid: HTMLElement | null
+  resultCapture: HTMLElement | null
   goBackButton: HTMLElement | null
-  copyShareButton: HTMLElement | null
-  copyLinkButton: HTMLElement | null
-  shareReadingButton: HTMLElement | null
+  shareImageButton: HTMLElement | null
+  shareXButton: HTMLElement | null
   resultMeta: HTMLElement | null
 }
 
