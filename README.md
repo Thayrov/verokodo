@@ -99,3 +99,8 @@ Local smoke test:
 ## Additional Docs
 
 - Decisions and architecture notes: `docs/DECISIONS.md`
+
+## References
+
+- Crystal ball effect directly adapted from code by shubniggurath: [CodePen](https://codepen.io/shubniggurath/pen/dgYyvO)
+- Smoke effect directly adapted from code by RustamAbraham: [CodePen](https://codepen.io/RustamAbraham/pen/jYLXZm)

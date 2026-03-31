@@ -62,3 +62,8 @@ Variables de entorno:
 ## Documentación Adicional
 
 - Decisiones y notas de arquitectura: `docs/DECISIONS.md`
+
+## Referencias
+
+- Efecto de bola de cristal adaptado directamente del codigo de shubniggurath: [CodePen](https://codepen.io/shubniggurath/pen/dgYyvO)
+- Efecto de humo adaptado directamente del codigo de RustamAbraham: [CodePen](https://codepen.io/RustamAbraham/pen/jYLXZm)
