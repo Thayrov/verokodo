@@ -37,7 +37,7 @@ export function createOracleUiState({
 }): OracleUiState {
   const crystalMoments = {
     beforeSearch: { zoom: 0.08, activity: 0.45 },
-    loading: { zoom: 1.18, activity: 1.05 },
+    loading: { zoom: 1.35, activity: 1.05 },
     afterSearch: { zoom: 0.18, activity: 0.58 }
   }
 

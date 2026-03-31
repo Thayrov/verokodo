@@ -232,7 +232,7 @@
 }
 
 #oracle-experience[data-state="loading"] .crystal-canvas {
-	transform: scale(1.9);
+	transform: scale(2.1);
 }
 
 #oracle-experience[data-state="result"] .crystal-canvas,
