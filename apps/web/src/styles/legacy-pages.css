@@ -108,15 +108,6 @@ h1 {
 	padding: clamp(1rem, 2vw, 2rem);
 }
 
-#oracle-experience .loading-panel {
-	width: min(26rem, 100%);
-	margin-inline: auto;
-	padding: 0.95rem;
-	text-align: left;
-	background: rgb(4 10 28 / 72%);
-	border: 1px solid rgb(145 191 255 / 24%);
-}
-
 .loading-progress {
 	margin-top: 0.65rem;
 	height: 0.45rem;

@@ -98,7 +98,7 @@
 }
 
 .error-panel {
-	padding: 0.72rem;
+	padding: 0;
 }
 
 .error-panel .error-banner {
@@ -191,6 +191,12 @@
 }
 
 #oracle-experience[data-state="loading"] #loading-panel {
+	width: min(26rem, 100%);
+	margin-inline: auto;
+	padding: 0.95rem;
+	text-align: left;
+	background: rgb(4 10 28 / 72%);
+	border: 1px solid rgb(145 191 255 / 24%);
 	opacity: 1;
 	max-height: min(40dvh, 17rem);
 	transform: translateY(0);
@@ -205,18 +211,17 @@
 }
 
 #oracle-experience[data-state="error"] #error-panel {
+	padding: 0.72rem;
 	opacity: 1;
 	max-height: min(40dvh, 16rem);
 	transform: translateY(0);
 	pointer-events: auto;
 }
 
-#oracle-experience[data-state="result"] .orb-stage,
 #oracle-experience[data-state="error"] .orb-stage {
 	align-items: start;
 }
 
-#oracle-experience[data-state="result"] .orb-content,
 #oracle-experience[data-state="error"] .orb-content {
 	align-content: start;
 }
