@@ -50,6 +50,42 @@ Environment variables:
 - `API_RATE_LIMIT_WINDOW_MS` (optional, default `900000`)
 - `API_RATE_LIMIT_MAX` (optional, default `100`)
 
+## Docker Compose Deployment (Dokploy)
+
+Use one Docker Compose app with two services:
+
+- `web`: public service (NGINX) that serves `apps/web/dist`
+- `api`: internal Bun/Hono service on Docker network only
+
+The web container reverse-proxies `/api/*` to the internal API service, so only the web entrypoint is exposed publicly.
+
+Files:
+
+- `docker-compose.yml`
+- `Dockerfile.web`
+- `Dockerfile.api`
+- `docker/nginx.conf`
+
+Required env in Dokploy:
+
+- `GOOGLE_GENERATIVE_AI_API_KEY`
+
+Optional env in Dokploy:
+
+- `VEROKODO_MODEL` (default `gemini-3.1-flash-lite-preview`)
+- `PUBLIC_API_BASE_URL` (default `/api`)
+
+Optional local compose env:
+
+- `WEB_PORT` (default `8080`)
+
+Local smoke test:
+
+1. Export `GOOGLE_GENERATIVE_AI_API_KEY` in your shell
+2. Run `docker compose up --build`
+3. Open `http://localhost:8080`
+4. Verify `http://localhost:8080/api/health` returns `{ "ok": true }`
+
 ## Hackathon Compliance Checklist
 
 - [ ] App deployed on CubePath

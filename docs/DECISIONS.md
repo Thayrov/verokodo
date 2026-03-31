@@ -56,6 +56,12 @@ This document records durable product and architecture decisions for the hackath
 - **Why:** reduces late integration risk and supports reliable demos.
 - **Implication:** latency control (constrained prompts/context, lightweight model) is mandatory.
 
+## D-010: Default deployment uses one public web service with internal API
+
+- **Decision:** deploy via Docker Compose with a public web proxy/static service and an internal API service on the private container network.
+- **Why:** reduces Dokploy app complexity for monorepo deploys and avoids exposing API ports directly.
+- **Implication:** frontend uses same-origin `/api` routing through reverse proxy; API remains reachable only via proxied routes.
+
 ## Non-goals for hackathon submission
 
 - Full multi-provider OAuth
