@@ -9,6 +9,8 @@ export type OracleLocale = 'en' | 'es'
 
 export type OracleCopy = {
   title: string
+  introEnterAria: string
+  introInstruction: string
   usernameLabel: string
   startButton: string
   startButtonAria: string
@@ -89,6 +91,10 @@ export type CrystalController = {
 }
 
 export type OracleElements = {
+  introTitle: HTMLElement | null
+  introEnterButton: HTMLElement | null
+  introInstruction: HTMLElement | null
+  introSmokeCanvas: HTMLElement | null
   crystalCanvas: HTMLElement
   experience: HTMLElement
   announceNode: HTMLElement | null
@@ -149,4 +155,4 @@ export type OracleUiState = {
   destroy: () => void
 }
 
-export type OracleState = 'idle' | 'loading' | 'result' | 'error'
+export type OracleState = 'intro' | 'idle' | 'loading' | 'result' | 'error'

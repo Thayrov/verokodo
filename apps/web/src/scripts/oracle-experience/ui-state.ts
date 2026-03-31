@@ -36,6 +36,7 @@ export function createOracleUiState({
   renderParagraphs: RenderParagraphs
 }): OracleUiState {
   const crystalMoments = {
+    intro: { zoom: 0.02, activity: 0.18 },
     beforeSearch: { zoom: 0.08, activity: 0.45 },
     loading: { zoom: 1.35, activity: 1.05 },
     afterSearch: { zoom: 0.18, activity: 0.58 }
@@ -77,11 +78,13 @@ export function createOracleUiState({
   }
 
   function updateInputInteractivity() {
-    const isLoading = elements.experience.dataset.state === 'loading'
+    const currentState = elements.experience.dataset.state
+    const isLoading = currentState === 'loading'
+    const isIntro = currentState === 'intro'
     const usernameValid = validateUsername(elements.usernameInput.value.trim())
-    const shouldDisableStart = isLoading || !usernameValid || !navigator.onLine
+    const shouldDisableStart = isLoading || isIntro || !usernameValid || !navigator.onLine
 
-    elements.usernameInput.disabled = isLoading
+    elements.usernameInput.disabled = isLoading || isIntro
 
     if (elements.startButton instanceof HTMLButtonElement) {
       elements.startButton.disabled = shouldDisableStart
@@ -98,7 +101,13 @@ export function createOracleUiState({
     elements.experience.setAttribute('aria-busy', nextState === 'loading' ? 'true' : 'false')
 
     const moment: keyof typeof crystalMoments =
-      nextState === 'idle' ? 'beforeSearch' : nextState === 'loading' ? 'loading' : 'afterSearch'
+      nextState === 'intro'
+        ? 'intro'
+        : nextState === 'idle'
+          ? 'beforeSearch'
+          : nextState === 'loading'
+            ? 'loading'
+            : 'afterSearch'
     crystal.setZoomTarget(crystalMoments[moment].zoom, immediate)
     crystal.setActivityTarget(crystalMoments[moment].activity, immediate)
     updateInputInteractivity()
@@ -139,7 +148,7 @@ export function createOracleUiState({
       recentUsernames = recentUsernamesStore.read()
       recentUsernamesUi.render(recentUsernames)
       applyPrefilledUsername()
-      setState('idle', { immediate: true })
+      setState('intro', { immediate: true })
       loadingFeedback.reset()
       updateUsernameHint()
       updateInputInteractivity()

@@ -14,11 +14,119 @@
 		linear-gradient(165deg, rgb(3 4 11 / 98%), rgb(2 6 18 / 98%));
 }
 
+@keyframes intro-instruction-fade {
+	from {
+		opacity: 0;
+		transform: translateY(7px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.intro-smoke-canvas {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 320ms ease;
+	z-index: 1;
+}
+
+.intro-screen {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 360ms ease;
+	z-index: 3;
+}
+
+.intro-content {
+	display: grid;
+	justify-items: center;
+	gap: 0.9rem;
+}
+
+.intro-enter-button {
+	appearance: none;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: rgb(238 247 255 / 96%);
+	font-family: Cinzel, serif;
+	font-size: clamp(3rem, 14vw, 7rem);
+	letter-spacing: 0.08em;
+	cursor: pointer;
+	pointer-events: auto;
+	transition: transform 240ms ease, opacity 240ms ease;
+	text-shadow:
+		0 0 20px rgb(113 177 255 / 34%),
+		0 0 56px rgb(76 143 255 / 22%);
+}
+
+#intro-title,
+#home-title {
+	view-transition-name: none;
+}
+
+#oracle-experience[data-state='intro'] #intro-title {
+	view-transition-name: verokodo-title;
+}
+
+#oracle-experience:not([data-state='intro']) #home-title {
+	view-transition-name: verokodo-title;
+}
+
+::view-transition-old(verokodo-title),
+::view-transition-new(verokodo-title) {
+	animation-duration: 420ms;
+	animation-timing-function: cubic-bezier(0.2, 0.7, 0.18, 1);
+	pointer-events: none;
+}
+
+::view-transition-group(*),
+::view-transition-image-pair(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+	pointer-events: none;
+}
+
+.intro-instruction {
+	margin: 0;
+	font-family: "IBM Plex Mono", monospace;
+	font-size: clamp(0.72rem, 2.2vw, 0.84rem);
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: rgb(194 218 249 / 88%);
+	opacity: 0;
+	animation: intro-instruction-fade 360ms ease 2s forwards;
+}
+
+.intro-enter-button:hover {
+	transform: translateY(-2px) scale(1.01);
+	opacity: 1;
+}
+
+.intro-enter-button:focus-visible {
+	outline: 2px solid rgb(133 208 255 / 92%);
+	outline-offset: 0.4rem;
+	border-radius: 0.35rem;
+}
+
 .crystal-canvas {
 	position: absolute;
 	inset: 0;
 	transform: scale(1.35);
-	transition: transform 900ms cubic-bezier(0.2, 0.7, 0.18, 1);
+	transition: transform 900ms cubic-bezier(0.2, 0.7, 0.18, 1), opacity 320ms ease;
+	z-index: 0;
 }
 
 .crystal-canvas canvas {
@@ -34,6 +142,7 @@
 		radial-gradient(circle at 50% 42%, transparent 24%, rgb(2 4 15 / 45%) 58%, rgb(2 3 9 / 88%) 100%),
 		radial-gradient(circle at 50% 115%, rgb(3 5 20 / 72%) 0%, transparent 52%);
 	pointer-events: none;
+	transition: opacity 320ms ease;
 }
 
 .experience-frame {
@@ -49,6 +158,29 @@
 	pointer-events: auto;
 	overflow: hidden;
 	isolation: isolate;
+	transition: opacity 320ms ease;
+}
+
+#oracle-experience[data-state='intro'] .intro-smoke-canvas {
+	opacity: 1;
+}
+
+#oracle-experience[data-state='intro'] .intro-screen {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+#oracle-experience:not([data-state='intro']) .intro-screen,
+#oracle-experience:not([data-state='intro']) .intro-smoke-canvas {
+	visibility: hidden;
+}
+
+#oracle-experience[data-state='intro'] .experience-frame,
+#oracle-experience[data-state='intro'] .crystal-canvas,
+#oracle-experience[data-state='intro'] .orb-vignette {
+	opacity: 0;
+	pointer-events: none;
+	visibility: hidden;
 }
 
 .experience-frame::before {

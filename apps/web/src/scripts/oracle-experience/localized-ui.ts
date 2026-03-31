@@ -8,6 +8,16 @@
 import type { OracleCopy, OracleElements } from './types'
 
 export function applyLocalizedCopy({ copy, elements }: { copy: OracleCopy; elements: OracleElements }): void {
+  if (elements.introTitle instanceof HTMLElement) elements.introTitle.textContent = copy.title
+
+  if (elements.introEnterButton instanceof HTMLButtonElement) {
+    elements.introEnterButton.setAttribute('aria-label', copy.introEnterAria)
+  }
+
+  if (elements.introInstruction instanceof HTMLElement) {
+    elements.introInstruction.textContent = copy.introInstruction
+  }
+
   if (elements.homeTitle instanceof HTMLElement) elements.homeTitle.textContent = copy.title
   if (elements.usernameLabel instanceof HTMLElement) elements.usernameLabel.textContent = copy.usernameLabel
 

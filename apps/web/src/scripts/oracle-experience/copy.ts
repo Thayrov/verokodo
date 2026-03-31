@@ -10,6 +10,8 @@ import type { OracleCopy, OracleLocale } from './types'
 const messages: Record<OracleLocale, OracleCopy> = {
   en: {
     title: 'Verokodo',
+    introEnterAria: 'Enter Verokodo',
+    introInstruction: 'Click title to start',
     usernameLabel: 'GitHub Username',
     startButton: 'Go',
     startButtonAria: 'Start reading',
@@ -62,6 +64,8 @@ const messages: Record<OracleLocale, OracleCopy> = {
   },
   es: {
     title: 'Verokodo',
+    introEnterAria: 'Entrar a Verokodo',
+    introInstruction: 'Haz clic en el titulo para comenzar',
     usernameLabel: 'Usuario de GitHub',
     startButton: 'Ir',
     startButtonAria: 'Iniciar lectura',

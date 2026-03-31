@@ -1,4 +1,5 @@
 import { createCrystalBallScene } from './crystal-ball-scene'
+import { createIntroSmokeScene } from './intro-smoke-scene'
 import { toBlob } from 'html-to-image'
 import { resolveLocaleCopy } from './oracle-experience/copy'
 import { applyLocalizedCopy } from './oracle-experience/localized-ui'
@@ -14,6 +15,10 @@ const { locale, copy } = resolveLocaleCopy()
 document.documentElement.lang = locale
 
 const candidateElements = {
+  introTitle: document.getElementById('intro-title'),
+  introEnterButton: document.getElementById('intro-enter-button'),
+  introInstruction: document.getElementById('intro-instruction'),
+  introSmokeCanvas: document.getElementById('intro-smoke-canvas'),
   crystalCanvas: document.getElementById('crystal-canvas'),
   experience: document.getElementById('oracle-experience'),
   announceNode: document.getElementById('screen-announce'),
@@ -81,6 +86,10 @@ const uiState = createOracleUiState({
   recentUsernamesStore,
   renderParagraphs
 })
+const introSmoke =
+  candidateElements.introSmokeCanvas instanceof HTMLCanvasElement
+    ? createIntroSmokeScene(candidateElements.introSmokeCanvas)
+    : null
 
 let activeRequestController: AbortController | null = null
 
@@ -147,6 +156,31 @@ function resolveShareContext() {
 
 applyLocalizedCopy({ copy, elements })
 uiState.initialize()
+
+elements.introEnterButton?.addEventListener('click', () => {
+  if (elements.experience.dataset.state !== 'intro') return
+
+  const enterExperience = () => {
+    uiState.resetToIdle({ preserveInput: true })
+  }
+
+  const transitionDocument = document as Document & {
+    startViewTransition?: (update: () => void) => ViewTransition
+  }
+  if (typeof transitionDocument.startViewTransition === 'function') {
+    const transition = transitionDocument.startViewTransition(() => {
+      enterExperience()
+    })
+
+    transition.finished.finally(() => {
+      introSmoke?.destroy()
+    })
+    return
+  }
+
+  enterExperience()
+  introSmoke?.destroy()
+})
 
 elements.oracleForm.addEventListener('submit', async (event) => {
   event.preventDefault()
@@ -302,6 +336,7 @@ window.addEventListener('keydown', (event) => {
   const isSlashKey = event.key === '/' || event.code === 'Slash' || event.code === 'NumpadDivide'
   if (!isSlashKey) return
   if (event.ctrlKey || event.metaKey || event.altKey) return
+  if (elements.experience.dataset.state === 'intro') return
 
   const target = event.target
   const isEditableElement =
@@ -318,5 +353,6 @@ window.addEventListener('keydown', (event) => {
 
 window.addEventListener('beforeunload', () => {
   activeRequestController?.abort()
+  introSmoke?.destroy()
   uiState.destroy()
 })

@@ -3,7 +3,17 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="Verokodo | First Reading">
-	<main id="oracle-experience" class="oracle-experience" data-state="idle">
+	<main id="oracle-experience" class="oracle-experience" data-state="intro">
+		<canvas id="intro-smoke-canvas" class="intro-smoke-canvas" aria-hidden="true"></canvas>
+		<section id="intro-screen" class="intro-screen">
+			<div class="intro-content">
+				<button id="intro-enter-button" class="intro-enter-button" type="button" aria-label="Enter Verokodo">
+					<span id="intro-title">Verokodo</span>
+				</button>
+				<p id="intro-instruction" class="intro-instruction">Click title to start</p>
+			</div>
+		</section>
+
 		<div id="crystal-canvas" class="crystal-canvas" aria-hidden="true"></div>
 		<div class="orb-vignette" aria-hidden="true"></div>
 
