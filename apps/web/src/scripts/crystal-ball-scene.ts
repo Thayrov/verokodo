@@ -132,12 +132,14 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
   let destroyed = false
   let inViewport = true
   const clock = new THREE.Clock()
+  const drawingBufferSize = new THREE.Vector2()
 
   const resize = (): void => {
     const width = container.clientWidth || window.innerWidth
     const height = container.clientHeight || window.innerHeight
     renderer.setSize(width, height, true)
-    uniforms.uResolution.value.set(width, height)
+    renderer.getDrawingBufferSize(drawingBufferSize)
+    uniforms.uResolution.value.copy(drawingBufferSize)
   }
 
   const render = (): void => {
