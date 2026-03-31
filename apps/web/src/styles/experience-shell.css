@@ -134,6 +134,14 @@
 	text-align: left;
 }
 
+#oracle-experience[data-state='idle'] #home-note {
+	margin-bottom: 0.45rem;
+}
+
+#oracle-experience[data-state='idle'] .orb-form + .form-meta {
+	margin-top: 0.35rem;
+}
+
 #username-hint,
 #username-shortcut {
 	margin: 0;
