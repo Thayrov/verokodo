@@ -60,6 +60,10 @@ export type OracleCopy = {
   announceResult: string
   announceError: string
   announceIdle: string
+  footerCopyright: string
+  footerLicenseLink: string
+  footerAbout: string
+  footerVisitPrefix: string
 }
 
 export type OracleSignals = {
@@ -133,6 +137,10 @@ export type OracleElements = {
   shareImageButton: HTMLElement | null
   shareXButton: HTMLElement | null
   resultMeta: HTMLElement | null
+  footerCopyright: HTMLElement | null
+  footerLicenseLink: HTMLElement | null
+  footerAbout: HTMLElement | null
+  footerVisitPrefix: HTMLElement | null
 }
 
 export type RecentUsernamesStore = {

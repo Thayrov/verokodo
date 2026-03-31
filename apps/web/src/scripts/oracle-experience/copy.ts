@@ -60,7 +60,12 @@ const messages: Record<OracleLocale, OracleCopy> = {
     announceLoading: 'Reading started.',
     announceResult: 'Reading ready.',
     announceError: 'Reading failed.',
-    announceIdle: 'Ready for a new reading.'
+    announceIdle: 'Ready for a new reading.',
+    footerCopyright: '© 2026 Thayrov. Released under the',
+    footerLicenseLink: 'MIT License',
+    footerAbout:
+      'About this website: built with Astro, TypeScript, Three.js, Hono, Bun, Zod, Vercel AI SDK, Docker Compose, and NGINX.',
+    footerVisitPrefix: 'Visit me at'
   },
   es: {
     title: 'Verokodo',
@@ -114,7 +119,12 @@ const messages: Record<OracleLocale, OracleCopy> = {
     announceLoading: 'La lectura inicio.',
     announceResult: 'La lectura esta lista.',
     announceError: 'La lectura fallo.',
-    announceIdle: 'Listo para una nueva lectura.'
+    announceIdle: 'Listo para una nueva lectura.',
+    footerCopyright: '© 2026 Thayrov. Publicado bajo la',
+    footerLicenseLink: 'Licencia MIT',
+    footerAbout:
+      'Acerca de este sitio web: construido con Astro, TypeScript, Three.js, Hono, Bun, Zod, Vercel AI SDK, Docker Compose y NGINX.',
+    footerVisitPrefix: 'Visítame en'
   }
 }
 

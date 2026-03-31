@@ -65,5 +65,5 @@ Variables de entorno:
 
 ## Referencias
 
-- Efecto de bola de cristal adaptado directamente del codigo de shubniggurath: [CodePen](https://codepen.io/shubniggurath/pen/dgYyvO)
-- Efecto de humo adaptado directamente del codigo de RustamAbraham: [CodePen](https://codepen.io/RustamAbraham/pen/jYLXZm)
+- Efecto de bola de cristal adaptado directamente del código de shubniggurath: [CodePen](https://codepen.io/shubniggurath/pen/dgYyvO)
+- Efecto de humo adaptado directamente del código de RustamAbraham: [CodePen](https://codepen.io/RustamAbraham/pen/jYLXZm)

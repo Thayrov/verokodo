@@ -56,7 +56,11 @@ const candidateElements = {
   goBackButton: document.getElementById('go-back'),
   shareImageButton: document.getElementById('share-image'),
   shareXButton: document.getElementById('share-x'),
-  resultMeta: document.getElementById('result-meta')
+  resultMeta: document.getElementById('result-meta'),
+  footerCopyright: document.getElementById('footer-copyright'),
+  footerLicenseLink: document.getElementById('footer-license-link'),
+  footerAbout: document.getElementById('footer-about'),
+  footerVisitPrefix: document.getElementById('footer-visit-prefix')
 }
 
 if (

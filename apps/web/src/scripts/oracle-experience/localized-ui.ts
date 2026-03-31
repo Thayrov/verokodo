@@ -78,4 +78,20 @@ export function applyLocalizedCopy({ copy, elements }: { copy: OracleCopy; eleme
   if (elements.shareXButton instanceof HTMLButtonElement) {
     elements.shareXButton.textContent = copy.shareXButton
   }
+
+  if (elements.footerCopyright instanceof HTMLElement) {
+    elements.footerCopyright.textContent = copy.footerCopyright
+  }
+
+  if (elements.footerLicenseLink instanceof HTMLElement) {
+    elements.footerLicenseLink.textContent = copy.footerLicenseLink
+  }
+
+  if (elements.footerAbout instanceof HTMLElement) {
+    elements.footerAbout.textContent = copy.footerAbout
+  }
+
+  if (elements.footerVisitPrefix instanceof HTMLElement) {
+    elements.footerVisitPrefix.textContent = `${copy.footerVisitPrefix} `
+  }
 }
