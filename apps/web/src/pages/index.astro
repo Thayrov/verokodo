@@ -16,6 +16,7 @@ import Layout from '../layouts/Layout.astro';
 				<div class="orb-shell">
 					<div class="orb-content">
 						<p id="screen-announce" class="sr-only" aria-live="polite"></p>
+						<p id="home-note" class="orb-note">Use your GitHub username to get a glimpse of your dev future.</p>
 						<form id="oracle-form" class="orb-form" aria-label="Start oracle reading">
 							<label id="username-label" for="username" class="sr-only">GitHub Username</label>
 							<div class="orb-input-shell">
@@ -36,18 +37,16 @@ import Layout from '../layouts/Layout.astro';
 						</form>
 
 						<div class="form-meta">
+							<p id="username-shortcut" class="status-text">Press <kbd>/</kbd> to focus</p>
 							<p id="username-hint" class="status-text">Only public GitHub usernames are supported.</p>
-							<div class="form-actions-inline">
-								<p id="username-shortcut" class="status-text">Press <kbd>/</kbd> to focus</p>
-								<button id="clear-recent" class="ghost-inline" type="button" hidden>Clear recent</button>
-							</div>
 							<div id="recent-usernames-panel" class="recent-usernames-panel" hidden>
-								<p id="recent-usernames-title" class="status-text recent-usernames-title">Recent usernames</p>
+								<div class="recent-usernames-header">
+									<p id="recent-usernames-title" class="status-text recent-usernames-title">Recent usernames</p>
+									<button id="clear-recent" class="ghost-inline subtle-clear" type="button" hidden>Clear recent</button>
+								</div>
 								<div id="recent-usernames-list" class="recent-usernames-list"></div>
 							</div>
 						</div>
-
-						<p id="home-note" class="orb-note">Use your GitHub username to get a glimpse of your dev future.</p>
 
 						<section id="loading-panel" class="oracle-panel loading-panel" aria-live="polite" aria-busy="true">
 							<p id="loading-label" class="status-eyebrow">Reading in progress</p>

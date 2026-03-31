@@ -39,6 +39,19 @@
 		padding: 0.8rem;
 	}
 
+	.brand-title {
+		font-size: clamp(1.9rem, 12vw, 2.8rem);
+	}
+
+	.orb-content {
+		gap: 0.7rem;
+	}
+
+	#username-shortcut,
+	#username-hint {
+		font-size: 0.7rem;
+	}
+
 	.result-scroll {
 		padding: 3.4rem 0.95rem 1.15rem;
 	}

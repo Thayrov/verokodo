@@ -49,14 +49,19 @@ export function createRecentUsernamesUi({
     render(usernames: string[]) {
       renderDatalist(usernames)
       renderChips(usernames)
+      const hasRecentUsernames = usernames.length > 0
 
       if (elements.clearRecentButton instanceof HTMLButtonElement) {
-        elements.clearRecentButton.hidden = usernames.length === 0
-        elements.clearRecentButton.disabled = usernames.length === 0
+        elements.clearRecentButton.hidden = !hasRecentUsernames
+        elements.clearRecentButton.disabled = !hasRecentUsernames
       }
 
       if (elements.recentUsernamesPanel instanceof HTMLElement) {
-        elements.recentUsernamesPanel.hidden = usernames.length === 0
+        elements.recentUsernamesPanel.hidden = !hasRecentUsernames
+      }
+
+      if (elements.recentUsernamesTitle instanceof HTMLElement) {
+        elements.recentUsernamesTitle.hidden = !hasRecentUsernames
       }
     }
   }

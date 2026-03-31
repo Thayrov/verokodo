@@ -130,16 +130,27 @@
 
 .form-meta {
 	display: grid;
-	gap: 0.35rem;
+	gap: 0.3rem;
 	text-align: left;
 }
 
-.form-actions-inline {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 0.75rem;
-	flex-wrap: wrap;
+#username-hint,
+#username-shortcut {
+	margin: 0;
+	font-size: 0.76rem;
+	line-height: 1.25;
+}
+
+#username-hint {
+	display: none;
+}
+
+.orb-form:focus-within + .form-meta #username-shortcut {
+	display: none;
+}
+
+.orb-form:focus-within + .form-meta #username-hint {
+	display: block;
 }
 
 .status-text[data-valid='valid'] {
@@ -151,13 +162,12 @@
 }
 
 #username-shortcut {
-	margin: 0;
-	font-size: 0.82rem;
+	color: rgb(188 210 248 / 84%);
 }
 
 #username-shortcut kbd {
 	font-family: "IBM Plex Mono", monospace;
-	font-size: 0.72rem;
+	font-size: 0.68rem;
 	padding: 0.1rem 0.33rem;
 	border-radius: 0.35rem;
 	border: 1px solid rgb(161 205 255 / 34%);
@@ -183,9 +193,39 @@
 	border-color: rgb(173 218 255 / 66%);
 }
 
+.subtle-clear {
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	color: rgb(173 197 236 / 78%);
+	font-size: 0.68rem;
+	letter-spacing: 0.02em;
+	opacity: 0.8;
+}
+
+.subtle-clear:hover {
+	border-color: transparent;
+	color: rgb(222 238 255 / 96%);
+	opacity: 1;
+}
+
+.subtle-clear:focus-visible {
+	outline: 1px solid rgb(131 211 255 / 80%);
+	outline-offset: 3px;
+	border-radius: 0.3rem;
+}
+
 .recent-usernames-panel {
 	display: grid;
 	gap: 0.45rem;
+}
+
+.recent-usernames-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.65rem;
 }
 
 .recent-usernames-title {
