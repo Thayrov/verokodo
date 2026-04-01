@@ -99,6 +99,7 @@ export function createOracleUiState({
   function setState(nextState: OracleState, { immediate = false }: { immediate?: boolean } = {}): void {
     elements.experience.dataset.state = nextState
     elements.experience.setAttribute('aria-busy', nextState === 'loading' ? 'true' : 'false')
+    crystal.setRenderingEnabled(nextState !== 'intro')
 
     const moment: keyof typeof crystalMoments =
       nextState === 'intro'

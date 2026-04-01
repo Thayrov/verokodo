@@ -11,6 +11,7 @@ import { fragmentShader, vertexShader } from './crystal-ball-shader'
 type CrystalBallScene = {
   setZoomTarget: (value: number, immediate?: boolean) => void
   setActivityTarget: (value: number, immediate?: boolean) => void
+  setRenderingEnabled: (enabled: boolean) => void
   destroy: () => void
 }
 
@@ -131,6 +132,7 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
   let rafId = 0
   let destroyed = false
   let inViewport = true
+  let renderingEnabled = true
   const clock = new THREE.Clock()
   const drawingBufferSize = new THREE.Vector2()
   const visualViewport = window.visualViewport
@@ -182,7 +184,7 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
   }
 
   const updateRenderLoopState = (): void => {
-    if (document.hidden || !inViewport) {
+    if (document.hidden || !inViewport || !renderingEnabled) {
       stopRenderLoop()
       return
     }
@@ -241,6 +243,10 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
       if (immediate) {
         currentActivity = targetActivity
       }
+    },
+    setRenderingEnabled(enabled: boolean) {
+      renderingEnabled = enabled
+      updateRenderLoopState()
     },
     destroy() {
       destroyed = true

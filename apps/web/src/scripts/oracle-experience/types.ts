@@ -91,6 +91,7 @@ export type RenderParagraphs = (text: string) => string
 export type CrystalController = {
   setZoomTarget: (value: number, immediate?: boolean) => void
   setActivityTarget: (value: number, immediate?: boolean) => void
+  setRenderingEnabled: (enabled: boolean) => void
   destroy: () => void
 }
 

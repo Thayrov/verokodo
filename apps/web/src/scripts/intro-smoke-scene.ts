@@ -46,6 +46,11 @@ const config = {
   SPLAT_RADIUS: 0.005
 }
 
+function resolvePressureIterations(userAgent: string): number {
+  const isChromiumBased = /Chrome|Chromium|CriOS/.test(userAgent) && !/Edg|OPR/.test(userAgent)
+  return isChromiumBased ? 18 : config.PRESSURE_ITERATIONS
+}
+
 const baseVertexShaderSource = `
 precision highp float;
 precision mediump sampler2D;
@@ -315,7 +320,8 @@ function getWebGLContext(canvas: HTMLCanvasElement): WebGlContextBundle | null {
     alpha: false,
     depth: false,
     stencil: false,
-    antialias: false
+    antialias: false,
+    powerPreference: 'high-performance'
   }
 
   let gl = canvas.getContext('webgl2', params) as WebGL2RenderingContext | null
@@ -363,6 +369,8 @@ function getWebGLContext(canvas: HTMLCanvasElement): WebGlContextBundle | null {
 export function createIntroSmokeScene(canvas: HTMLCanvasElement): IntroSmokeController {
   canvas.width = canvas.clientWidth
   canvas.height = canvas.clientHeight
+
+  const pressureIterations = resolvePressureIterations(window.navigator.userAgent)
 
   const glContext = getWebGLContext(canvas)
   if (!glContext) return { destroy() {} }
@@ -595,18 +603,30 @@ export function createIntroSmokeScene(canvas: HTMLCanvasElement): IntroSmokeCont
     if (canvas.width === canvas.clientWidth && canvas.height === canvas.clientHeight) return
     canvas.width = canvas.clientWidth
     canvas.height = canvas.clientHeight
+    updateCanvasBounds()
     initFramebuffers()
   }
 
+  const interactionTarget: HTMLElement | Window = canvas.parentElement ?? window
+  let canvasBounds = canvas.getBoundingClientRect()
+
+  function updateCanvasBounds(): void {
+    canvasBounds = canvas.getBoundingClientRect()
+  }
+
   initFramebuffers()
-  let lastTime = Date.now()
+  let lastTime = 0
   let animationFrameId = 0
 
-  function update(): void {
+  function update(frameTime: DOMHighResTimeStamp): void {
     resizeCanvas()
 
-    const dt = Math.min((Date.now() - lastTime) / 1000, 0.016)
-    lastTime = Date.now()
+    if (lastTime === 0) {
+      lastTime = frameTime
+    }
+
+    const dt = Math.min((frameTime - lastTime) / 1000, 0.016)
+    lastTime = frameTime
 
     gl.viewport(0, 0, textureWidth, textureHeight)
 
@@ -666,7 +686,7 @@ export function createIntroSmokeScene(canvas: HTMLCanvasElement): IntroSmokeCont
     pressureTextureId = pressure.first[2]
     gl.activeTexture(gl.TEXTURE0 + pressureTextureId)
 
-    for (let index = 0; index < config.PRESSURE_ITERATIONS; index += 1) {
+    for (let index = 0; index < pressureIterations; index += 1) {
       gl.bindTexture(gl.TEXTURE_2D, pressure.first[0])
       gl.uniform1i(pressureProgram.uniforms.uPressure, pressureTextureId)
       blit(pressure.second[1])
@@ -692,10 +712,9 @@ export function createIntroSmokeScene(canvas: HTMLCanvasElement): IntroSmokeCont
   let color: [number, number, number] = [Math.random() + 0.2, Math.random() + 0.2, Math.random() + 0.2]
 
   function toCanvasCoordinates(clientX: number, clientY: number): { x: number; y: number } {
-    const bounds = canvas.getBoundingClientRect()
     return {
-      x: Math.max(0, Math.min(canvas.width, clientX - bounds.left)),
-      y: Math.max(0, Math.min(canvas.height, clientY - bounds.top))
+      x: Math.max(0, Math.min(canvas.width, clientX - canvasBounds.left)),
+      y: Math.max(0, Math.min(canvas.height, clientY - canvasBounds.top))
     }
   }
 
@@ -709,11 +728,12 @@ export function createIntroSmokeScene(canvas: HTMLCanvasElement): IntroSmokeCont
     }
 
     const pointer = pointers[0]
+    const wasDown = pointer.down
     pointer.down = true
     pointer.color = color
-    pointer.moved = pointer.down
-    pointer.dx = (point.x - pointer.x) * 10.0
-    pointer.dy = (point.y - pointer.y) * 10.0
+    pointer.moved = wasDown
+    pointer.dx = wasDown ? (point.x - pointer.x) * 10.0 : 0
+    pointer.dy = wasDown ? (point.y - pointer.y) * 10.0 : 0
     pointer.x = point.x
     pointer.y = point.y
   }
@@ -730,34 +750,39 @@ export function createIntroSmokeScene(canvas: HTMLCanvasElement): IntroSmokeCont
     for (let index = 0; index < touches.length; index += 1) {
       if (index >= pointers.length) pointers.push(createPointer())
 
-      const point = toCanvasCoordinates(touches[index].clientX, touches[index].clientY)
+      const touch = touches[index]
+      const point = toCanvasCoordinates(touch.clientX, touch.clientY)
       const pointer = pointers[index]
       const previousX = pointer.x
       const previousY = pointer.y
+      const wasDown = pointer.down
 
-      pointer.id = touches[index].identifier
+      pointer.id = touch.identifier
       pointer.down = true
       pointer.color = color
-      pointer.moved = pointer.down
-      pointer.dx = (point.x - previousX) * 10.0
-      pointer.dy = (point.y - previousY) * 10.0
+      pointer.moved = wasDown
+      pointer.dx = wasDown ? (point.x - previousX) * 10.0 : 0
+      pointer.dy = wasDown ? (point.y - previousY) * 10.0 : 0
       pointer.x = point.x
       pointer.y = point.y
     }
   }
 
-  window.addEventListener('mousemove', onMouseMove)
-  window.addEventListener('touchmove', onTouchMove, { passive: true })
+  interactionTarget.addEventListener('mousemove', onMouseMove, { passive: true })
+  interactionTarget.addEventListener('touchmove', onTouchMove, { passive: true })
   window.addEventListener('resize', resizeCanvas)
+  window.addEventListener('scroll', updateCanvasBounds, { passive: true })
 
-  update()
+  updateCanvasBounds()
+  animationFrameId = window.requestAnimationFrame(update)
 
   return {
     destroy() {
       window.cancelAnimationFrame(animationFrameId)
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('touchmove', onTouchMove)
+      interactionTarget.removeEventListener('mousemove', onMouseMove)
+      interactionTarget.removeEventListener('touchmove', onTouchMove)
       window.removeEventListener('resize', resizeCanvas)
+      window.removeEventListener('scroll', updateCanvasBounds)
       gl.getExtension('WEBGL_lose_context')?.loseContext()
     }
   }
