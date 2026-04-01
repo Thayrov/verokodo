@@ -102,26 +102,26 @@ export function createCrystalBallScene(container: HTMLElement): CrystalBallScene
   container.append(renderer.domElement)
 
   textureLoader.load(
-    '/noise.png',
+    '/noise.webp',
     (texture) => {
       configureTiling(texture)
       replaceUniformTexture(uniforms.uNoise, texture, managedTextures)
     },
     undefined,
     () => {
-      throw new Error('Failed to load /noise.png texture.')
+      throw new Error('Failed to load /noise.webp texture.')
     }
   )
 
   textureLoader.load(
-    '/env_lat-lon.png',
+    '/env_lat-lon.webp',
     (texture) => {
       configureTiling(texture)
       replaceUniformTexture(uniforms.uEnv, texture, managedTextures)
     },
     undefined,
     () => {
-      throw new Error('Failed to load /env_lat-lon.png texture.')
+      throw new Error('Failed to load /env_lat-lon.webp texture.')
     }
   )
 
