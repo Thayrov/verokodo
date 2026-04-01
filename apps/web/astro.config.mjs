@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://verokodo.thayrov.com',
   vite: {
     envDir: fileURLToPath(new URL('../..', import.meta.url)),
     optimizeDeps: {

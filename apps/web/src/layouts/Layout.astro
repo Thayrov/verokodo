@@ -10,6 +10,12 @@ const {
 	title = 'Verokodo | Code Oracle',
 	description = 'Immersive oracle readings for public developer profiles.'
 } = Astro.props;
+
+const site = Astro.site ?? new URL('https://verokodo.thayrov.com');
+const canonicalUrl = new URL(Astro.url.pathname, site).toString();
+const ogImageUrl = new URL('/og/verokodo-og.jpg', site).toString();
+const ogImageAlt = 'Verokodo logo glowing over a dark background.';
+const twitterDomain = site.hostname;
 ---
 
 <!doctype html>
@@ -18,6 +24,22 @@ const {
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalUrl} />
+		<meta property="og:url" content={canonicalUrl} />
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:image" content={ogImageUrl} />
+		<meta property="og:image:alt" content={ogImageAlt} />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta property="twitter:domain" content={twitterDomain} />
+		<meta property="twitter:url" content={canonicalUrl} />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={ogImageUrl} />
+		<meta name="twitter:image:alt" content={ogImageAlt} />
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
