@@ -6,7 +6,7 @@ Una experiencia inmersiva para desarrolladores que lee un perfil público de pro
 
 ## Demo
 
-- URL de demo del hackathon: próximamente
+- URL de demo del hackathon: https://verokodo.thayrov.com
 
 ## Qué Es
 

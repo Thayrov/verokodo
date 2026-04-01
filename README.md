@@ -6,7 +6,7 @@ An immersive developer experience that reads a public coding profile and returns
 
 ## Demo
 
-- Hackathon demo URL: coming soon
+- Hackathon demo URL: https://verokodo.thayrov.com
 
 ## What It Is
 
