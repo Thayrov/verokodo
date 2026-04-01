@@ -7,15 +7,49 @@ interface Props {
 }
 
 const {
-	title = 'Verokodo | Code Oracle',
-	description = 'Immersive oracle readings for public developer profiles.'
+	title = 'Verokodo - AI Oracle Readings for GitHub Developers',
+	description =
+		'Verokodo delivers immersive AI oracle readings from public GitHub profile signals, turning your repos and coding patterns into dramatic career forecasts.'
 } = Astro.props;
 
 const site = Astro.site ?? new URL('https://verokodo.thayrov.com');
 const canonicalUrl = new URL(Astro.url.pathname, site).toString();
 const ogImageUrl = new URL('/og/verokodo-og.jpg', site).toString();
 const ogImageAlt = 'Verokodo logo glowing over a dark background.';
+const ogSiteName = 'Verokodo';
+const ogLocale = 'en_US';
 const twitterDomain = site.hostname;
+const twitterHandle = '@ThayrovG';
+const structuredData = {
+	'@context': 'https://schema.org',
+	'@graph': [
+		{
+			'@type': 'WebSite',
+			name: ogSiteName,
+			url: site.toString(),
+			description
+		},
+		{
+			'@type': 'WebPage',
+			name: title,
+			url: canonicalUrl,
+			description,
+			inLanguage: 'en',
+			isPartOf: {
+				'@type': 'WebSite',
+				name: ogSiteName,
+				url: site.toString()
+			},
+			primaryImageOfPage: {
+				'@type': 'ImageObject',
+				url: ogImageUrl,
+				width: 1200,
+				height: 630,
+				description: ogImageAlt
+			}
+		}
+	]
+};
 ---
 
 <!doctype html>
@@ -24,9 +58,13 @@ const twitterDomain = site.hostname;
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="description" content={description} />
+		<meta name="theme-color" content="#050a1a" />
 		<link rel="canonical" href={canonicalUrl} />
 		<meta property="og:url" content={canonicalUrl} />
 		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content={ogSiteName} />
+		<meta property="og:locale" content={ogLocale} />
+		<meta property="og:locale:alternate" content="es_ES" />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:image" content={ogImageUrl} />
@@ -36,10 +74,14 @@ const twitterDomain = site.hostname;
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta property="twitter:domain" content={twitterDomain} />
 		<meta property="twitter:url" content={canonicalUrl} />
+		<meta name="twitter:site" content={twitterHandle} />
+		<meta name="twitter:creator" content={twitterHandle} />
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImageUrl} />
 		<meta name="twitter:image:alt" content={ogImageAlt} />
+		<script type="application/ld+json" set:html={JSON.stringify(structuredData)}></script>
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
