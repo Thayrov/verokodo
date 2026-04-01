@@ -14,6 +14,8 @@ type ResultRenderer = {
   setError: (message: string) => void
 }
 
+type SignalCardKey = 'followers' | 'publicRepos' | 'topLanguages' | 'recentRepos'
+
 export function createResultRenderer({
   elements,
   copy,
@@ -23,11 +25,11 @@ export function createResultRenderer({
   copy: OracleCopy
   renderParagraphs: RenderParagraphs
 }): ResultRenderer {
-  function mountSignal(label: string, value: string): void {
+  function mountSignal(key: SignalCardKey, label: string, value: string): void {
     if (!(elements.signalGrid instanceof HTMLElement)) return
 
     const card = document.createElement('article')
-    card.className = 'signal-card'
+    card.className = `signal-card signal-card--${key}`
 
     const labelNode = document.createElement('p')
     labelNode.className = 'signal-label'
@@ -63,10 +65,10 @@ export function createResultRenderer({
       if (elements.resultMeta instanceof HTMLElement) elements.resultMeta.textContent = copy.resultMeta(elapsedSeconds)
       if (elements.signalGrid instanceof HTMLElement) elements.signalGrid.innerHTML = ''
 
-      mountSignal(copy.followers, String(reading.signals.followers))
-      mountSignal(copy.publicRepos, String(reading.signals.publicRepos))
-      mountSignal(copy.topLanguages, reading.signals.topLanguages.join(', ') || copy.unknown)
-      mountSignal(copy.recentRepos, reading.signals.recentRepoNames.join(', ') || copy.unknown)
+      mountSignal('followers', copy.followers, String(reading.signals.followers))
+      mountSignal('publicRepos', copy.publicRepos, String(reading.signals.publicRepos))
+      mountSignal('topLanguages', copy.topLanguages, reading.signals.topLanguages.join(', ') || copy.unknown)
+      mountSignal('recentRepos', copy.recentRepos, reading.signals.recentRepoNames.join(', ') || copy.unknown)
     },
     setNotice(message: string): boolean {
       if (elements.experience.dataset.state !== 'result' || !(elements.resultMeta instanceof HTMLElement)) {

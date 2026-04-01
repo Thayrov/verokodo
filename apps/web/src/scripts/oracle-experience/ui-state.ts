@@ -45,6 +45,8 @@ export function createOracleUiState({
   let recentUsernames: string[] = []
   let latestError = ''
   let latestReading: OracleReading | null = null
+  let hasPlayedResultScrollAnimation = false
+  let resultScrollObserver: IntersectionObserver | null = null
 
   const loadingFeedback = createLoadingFeedback({
     elements,
@@ -96,7 +98,92 @@ export function createOracleUiState({
     }
   }
 
+  function getResultRevealTargets(): HTMLElement[] {
+    if (!(elements.resultCapture instanceof HTMLElement)) return []
+
+    const topLevelTargets = Array.from(elements.resultCapture.children).filter(
+      (child): child is HTMLElement => child instanceof HTMLElement
+    )
+
+    const signalCardTargets =
+      elements.signalGrid instanceof HTMLElement
+        ? Array.from(elements.signalGrid.querySelectorAll('.signal-card')).filter(
+            (child): child is HTMLElement => child instanceof HTMLElement
+          )
+        : []
+
+    return [...topLevelTargets, ...signalCardTargets]
+  }
+
+  function resetResultScrollAnimationState(): void {
+    resultScrollObserver?.disconnect()
+    resultScrollObserver = null
+
+    const revealTargets = getResultRevealTargets()
+    if (revealTargets.length === 0) return
+
+    for (const target of revealTargets) {
+      target.classList.add('result-scroll-visible')
+    }
+
+    elements.experience.dataset.resultScrollState = 'done'
+  }
+
+  function startResultScrollAnimationOnce(): void {
+    if (hasPlayedResultScrollAnimation) return
+    hasPlayedResultScrollAnimation = true
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      resetResultScrollAnimationState()
+      return
+    }
+
+    if (!(elements.resultCapture instanceof HTMLElement)) return
+
+    const revealTargets = getResultRevealTargets()
+    if (revealTargets.length === 0) return
+
+    for (const target of revealTargets) {
+      target.classList.remove('result-scroll-visible')
+    }
+
+    elements.experience.dataset.resultScrollState = 'armed'
+    elements.resultCapture.scrollTo({ top: 0, behavior: 'auto' })
+
+    if (!('IntersectionObserver' in window)) {
+      resetResultScrollAnimationState()
+      return
+    }
+
+    resultScrollObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting || !(entry.target instanceof HTMLElement)) continue
+          entry.target.classList.add('result-scroll-visible')
+          resultScrollObserver?.unobserve(entry.target)
+        }
+
+        const hasHiddenTargets = revealTargets.some((target) => !target.classList.contains('result-scroll-visible'))
+        if (!hasHiddenTargets) resetResultScrollAnimationState()
+      },
+      {
+        root: elements.resultCapture,
+        threshold: 0.2
+      }
+    )
+
+    for (const target of revealTargets) {
+      resultScrollObserver.observe(target)
+    }
+  }
+
   function setState(nextState: OracleState, { immediate = false }: { immediate?: boolean } = {}): void {
+    const currentState = elements.experience.dataset.state as OracleState | undefined
+
+    if (currentState === 'result' && nextState !== 'result') {
+      resetResultScrollAnimationState()
+    }
+
     elements.experience.dataset.state = nextState
     elements.experience.setAttribute('aria-busy', nextState === 'loading' ? 'true' : 'false')
     crystal.setRenderingEnabled(nextState !== 'intro')
@@ -111,6 +198,11 @@ export function createOracleUiState({
             : 'afterSearch'
     crystal.setZoomTarget(crystalMoments[moment].zoom, immediate)
     crystal.setActivityTarget(crystalMoments[moment].activity, immediate)
+
+    if (nextState === 'result' && currentState !== 'result') {
+      startResultScrollAnimationOnce()
+    }
+
     updateInputInteractivity()
   }
 
@@ -217,6 +309,8 @@ export function createOracleUiState({
     },
     destroy() {
       loadingFeedback.stop()
+      resultScrollObserver?.disconnect()
+      resultScrollObserver = null
       crystal.destroy()
     }
   }

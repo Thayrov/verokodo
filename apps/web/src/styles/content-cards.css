@@ -12,12 +12,39 @@
 	margin-top: 1.2rem;
 }
 
+#result-panel .signal-grid {
+	grid-template-columns: minmax(6.8rem, 0.82fr) repeat(2, minmax(11rem, 1fr));
+	grid-template-rows: repeat(2, minmax(0, auto));
+}
+
+#result-panel .signal-card--followers {
+	grid-column: 1;
+	grid-row: 1;
+}
+
+#result-panel .signal-card--publicRepos {
+	grid-column: 1;
+	grid-row: 2;
+}
+
+#result-panel .signal-card--topLanguages {
+	grid-column: 2;
+	grid-row: 1 / span 2;
+}
+
+#result-panel .signal-card--recentRepos {
+	grid-column: 3;
+	grid-row: 1 / span 2;
+}
+
 .signal-card {
 	margin: 0;
 	padding: 0.7rem;
 	border: 0;
 	border-radius: 0.75rem;
 	background: rgb(7 13 29 / 60%);
+	opacity: 1;
+	transform: translateY(0);
 	transition: transform 260ms ease, background-color 260ms ease;
 }
 
@@ -119,26 +146,72 @@
 	color: rgb(180 212 255 / 78%);
 }
 
-#oracle-experience[data-state="result"] .result-scroll > * {
+.result-scroll > * {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+#oracle-experience[data-result-scroll-state="armed"] .result-scroll > * {
+	opacity: 0;
+	transform: translateY(8px);
+}
+
+#oracle-experience[data-result-scroll-state="armed"] .result-scroll > .result-scroll-visible {
 	animation: reveal-up 360ms cubic-bezier(0.2, 0.7, 0.18, 1) both;
 }
 
-#oracle-experience[data-state="result"] .result-scroll > :nth-child(2) {
+#oracle-experience[data-result-scroll-state="armed"] .result-scroll > .result-scroll-visible:nth-child(2) {
 	animation-delay: 24ms;
 }
 
-#oracle-experience[data-state="result"] .result-scroll > :nth-child(3) {
+#oracle-experience[data-result-scroll-state="armed"] .result-scroll > .result-scroll-visible:nth-child(3) {
 	animation-delay: 48ms;
 }
 
-#oracle-experience[data-state="result"] .result-scroll > :nth-child(4) {
+#oracle-experience[data-result-scroll-state="armed"] .result-scroll > .result-scroll-visible:nth-child(4) {
 	animation-delay: 72ms;
 }
 
-#oracle-experience[data-state="result"] .result-scroll > :nth-child(5) {
+#oracle-experience[data-result-scroll-state="armed"] .result-scroll > .result-scroll-visible:nth-child(5) {
 	animation-delay: 96ms;
 }
 
-#oracle-experience[data-state="result"] .result-scroll > :nth-child(6) {
+#oracle-experience[data-result-scroll-state="armed"] .result-scroll > .result-scroll-visible:nth-child(6) {
 	animation-delay: 120ms;
+}
+
+#oracle-experience[data-result-scroll-state="armed"] .signal-card {
+	opacity: 0;
+	transform: translateY(8px);
+}
+
+#oracle-experience[data-result-scroll-state="armed"] .signal-card.result-scroll-visible {
+	animation: reveal-up 360ms cubic-bezier(0.2, 0.7, 0.18, 1) both;
+}
+
+#oracle-experience[data-result-scroll-state="armed"] .signal-grid > .signal-card.result-scroll-visible:nth-child(2) {
+	animation-delay: 24ms;
+}
+
+#oracle-experience[data-result-scroll-state="armed"] .signal-grid > .signal-card.result-scroll-visible:nth-child(3) {
+	animation-delay: 48ms;
+}
+
+#oracle-experience[data-result-scroll-state="armed"] .signal-grid > .signal-card.result-scroll-visible:nth-child(4) {
+	animation-delay: 72ms;
+}
+
+@media (max-width: 680px) {
+	#result-panel .signal-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-rows: auto;
+	}
+
+	#result-panel .signal-card--followers,
+	#result-panel .signal-card--publicRepos,
+	#result-panel .signal-card--topLanguages,
+	#result-panel .signal-card--recentRepos {
+		grid-column: auto;
+		grid-row: auto;
+	}
 }

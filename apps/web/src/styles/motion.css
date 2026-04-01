@@ -69,7 +69,9 @@
 @media (prefers-reduced-motion: reduce) {
 	.experience-frame::before,
 	.sigil,
-	#oracle-experience[data-state="result"] .result-scroll > * {
+	#oracle-experience[data-state="result"] .result-scroll > *,
+	#oracle-experience[data-result-scroll-state="armed"] .result-scroll > .result-scroll-visible,
+	#oracle-experience[data-result-scroll-state="armed"] .signal-card.result-scroll-visible {
 		animation: none;
 	}
 
