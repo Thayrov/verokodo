@@ -1,6 +1,7 @@
 import { Hono, type Context } from 'hono'
 import { cors } from 'hono/cors'
 import { HTTPException } from 'hono/http-exception'
+import { logger } from 'hono/logger'
 import { rateLimiter } from 'hono-rate-limiter'
 import { ZodError } from 'zod'
 
@@ -10,6 +11,7 @@ import { fetchGitHubSignals } from './github-signals'
 import { generateOracleReading } from './oracle-generator'
 
 const app = new Hono()
+const enableAccessLogs = process.env.API_ACCESS_LOGS !== '0'
 
 function parsePositiveInt(rawValue: string | undefined, fallback: number): number {
   if (!rawValue) return fallback
@@ -43,6 +45,10 @@ const oracleRateLimiter = rateLimiter({
   limit: parsePositiveInt(process.env.API_RATE_LIMIT_MAX, 100),
   keyGenerator: resolveClientKey
 })
+
+if (enableAccessLogs) {
+  app.use('*', logger())
+}
 
 app.use(
   '*',
